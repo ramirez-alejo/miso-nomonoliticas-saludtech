@@ -1,0 +1,132 @@
+ContextMap AeroAlpesBooking {
+    contains BookingContext
+    contains CustomerContext
+    contains PaymentContext
+    contains GDSContext
+    contains AirlineContext
+    contains HotelContext
+    contains NotificationContext
+
+    // Relationships between contexts
+
+    BookingContext [D] <- [U] CustomerContext
+    BookingContext [D] <- [U] PaymentContext
+    BookingContext [D] <- [U] GDSContext
+    BookingContext [D] <- [U] AirlineContext
+    BookingContext [D] <- [U] HotelContext
+
+    CustomerContext [D] <- [U] PaymentContext
+   
+    PaymentContext [D] <- [U] NotificationContext
+    AirlineContext [D] <- [U] NotificationContext
+    HotelContext [D] <- [U] NotificationContext
+}
+
+    // Domain Vision Statement
+    //domainVisionStatement "To be the number one option for flight, hotel and tour package booking in Latin America, Middle East and Sub-Saharan Africa."
+
+    // Bounded Contexts
+
+    // Core Domain - Booking Context
+    BoundedContext BookingContext {
+        /* type Core
+        domainVisionStatement "Manages the core booking process, including flight, hotel and package reservations." */
+       
+        Module reservation {
+        //description "Handles all reservation related aggregates"
+            Aggregate  Reservation {
+             Entity FlightReservation
+             Entity HotelReservation
+             Entity PackageReservation
+             ValueObject Itinerary
+             ValueObject BookingDetails
+            }
+        }
+    }
+
+    // Core Domain - Customer Context
+    BoundedContext CustomerContext {
+        //type Core
+        //domainVisionStatement "Manages customer data and interactions."
+        Module customer {
+           //description "Handles customer aggregates"
+            Aggregate CustomerProfile {
+             Entity Customer
+             ValueObject PersonalDetails
+            }
+        }
+        Module loyalty {
+         //description "Handles loyalty program aggregates"
+            Aggregate LoyaltyProgram {
+             Entity LoyaltyAccount
+              ValueObject RewardPoints
+            }
+        }
+    }
+
+    // Supporting Subdomain - Payment Context
+    BoundedContext PaymentContext {
+       //type Supporting
+        domainVisionStatement "Processes payments for bookings."
+        Module payment {
+         //description "Handles payment related aggregates"
+            Aggregate Payment {
+             Entity PaymentTransaction
+              ValueObject PaymentMethod
+            }
+        }
+    }
+
+  // Generic Subdomain - GDS Context
+    BoundedContext GDSContext {
+       //type Generic
+        domainVisionStatement "Integrates with various Global Distribution Systems for flight availability and pricing."
+       Module gds {
+        //description "Handles GDS aggregates"
+           Aggregate GDS {
+              Entity GDSConnection
+              ValueObject Availability
+              ValueObject Pricing
+           }
+        }
+    }
+   
+    // Generic Subdomain - Airline Context
+    BoundedContext AirlineContext {
+       //type Generic
+        domainVisionStatement "Manages direct integrations with airlines for flight availability and booking."
+       Module airline {
+         //description "Handles airline aggregates"
+          Aggregate Airline {
+           Entity AirlineConnection
+            ValueObject FlightDetails
+           }
+       }
+    }
+
+    // Generic Subdomain - Hotel Context
+    BoundedContext HotelContext {
+        //type Generic
+        domainVisionStatement "Manages integrations with hotels for availability and booking."
+       Module hotel {
+         //description "Handles hotel aggregates"
+            Aggregate Hotel {
+             Entity HotelConnection
+             ValueObject RoomDetails
+             ValueObject Pricing
+            }
+        }
+    }
+    
+    // Generic Subdomain - Notification Context
+    BoundedContext NotificationContext {
+        //type Generic
+        domainVisionStatement "Manages notifications to users."
+        Module notification {
+         //description "Handles notifications aggregates"
+           Aggregate Notification {
+            Entity NotificationEvent
+            ValueObject Message
+           }
+        }
+    }
