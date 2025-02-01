@@ -172,13 +172,13 @@ BoundedContext ContextoRecoleccion implements GestionProveedores, Ingestion, Ano
         Aggregate AccesoProveedor {
             Entity Credenciales {
                 String usuario
-                String tipoAutenticacion // MFA, SSO, etc.
+                String tipoAutenticacion // MFA, SSO
                 String estado
                 Date ultimoAcceso
             }
             Entity PermisosCarga {
-                String tipoPermiso // upload, delete, view
-                String alcance // all, specific folders
+                String tipoPermiso // read, write, admin
+                String alcance // all, Proveedores
                 Date expiracion
             }
         }
@@ -189,7 +189,7 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
     Module clasificacion {
         Aggregate Modalidad {
             Entity TipoModalidad {
-                String codigo // RX, TC, RM, etc.
+                String codigo // RX, TC, RM
                 String nombre
                 String descripcion
                 Boolean activo
@@ -205,7 +205,7 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
                 String codigo
                 String nombre
                 String descripcion
-                String sistemaCodificacion // SNOMED-CT, etc.
+                String sistemaCodificacion
             }
             ValueObject Localizacion {
                 String coordenadas
@@ -273,8 +273,24 @@ BoundedContext ContextoSeguridad implements Seguridad {
     }
 }
 
-/* Context Map showing relationships between bounded contexts */
-ContextMap SaludTechContextMap {
+
+/* ContextMap SaludTechActualMap {
+    state = AS_IS
+    
+    contains ContextoRecoleccion
+    contains ContextoProcesamiento
+    contains ContextoDistribucion
+    contains ContextoSeguridad
+
+    ContextoRecoleccion [SK]<->[SK] ContextoProcesamiento 
+    ContextoProcesamiento [SK]<->[SK] ContextoDistribucion
+    
+    ContextoRecoleccion [P]<->[P] ContextoSeguridad 
+    ContextoProcesamiento [P]<->[P] ContextoSeguridad
+    ContextoDistribucion [P]<->[P] ContextoSeguridad
+} */
+
+ContextMap SaludTechFuturoMap {
     state = TO_BE
     
     contains ContextoRecoleccion
@@ -282,21 +298,17 @@ ContextMap SaludTechContextMap {
     contains ContextoDistribucion
     contains ContextoSeguridad
 
-    /* ContextoSeguridad is upstream to all other contexts as it enforces security policies */
     ContextoRecoleccion [D] <- [U] ContextoSeguridad
     ContextoProcesamiento [D] <- [U] ContextoSeguridad
     ContextoDistribucion [D] <- [U] ContextoSeguridad
 
-    /* ContextoRecoleccion provides data to ContextoProcesamiento through an ACL
-     * Protege el procesamiento de cambios en formatos de ingesta y protocolos de proveedores */
+     /* Protege el procesamiento de cambios en formatos de ingesta y protocolos de proveedores */
     ContextoProcesamiento [ACL]<-[U] ContextoRecoleccion
 
-    /* ContextoDistribucion consumes from Procesamiento through an ACL
-     * Mantiene estabilidad en las interfaces de acceso a datos para clientes */
+     /* Mantiene estabilidad en las interfaces de acceso a datos para clientes */
     ContextoDistribucion [ACL]<-[U] ContextoProcesamiento
 
-    /* ContextoDistribucion consumes from Recoleccion through an ACL
-     * Aísla cambios en la gestión de proveedores del sistema de distribución */
+     /* Aísla cambios en la gestión de proveedores del sistema de distribución */
     ContextoDistribucion [ACL]<-[U] ContextoRecoleccion
 }
 
