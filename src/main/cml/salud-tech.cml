@@ -287,12 +287,17 @@ ContextMap SaludTechContextMap {
     ContextoProcesamiento [D] <- [U] ContextoSeguridad
     ContextoDistribucion [D] <- [U] ContextoSeguridad
 
-    /* ContextoRecoleccion provides data to ContextoProcesamiento */
-    ContextoProcesamiento [D] <- [U] ContextoRecoleccion
+    /* ContextoRecoleccion provides data to ContextoProcesamiento through an ACL
+     * Protege el procesamiento de cambios en formatos de ingesta y protocolos de proveedores */
+    ContextoProcesamiento [ACL]<-[U] ContextoRecoleccion
 
-    /* ContextoDistribucion consumes from both Recoleccion and Procesamiento */
-    ContextoDistribucion [D] <- [U] ContextoRecoleccion
-    ContextoDistribucion [D] <- [U] ContextoProcesamiento
+    /* ContextoDistribucion consumes from Procesamiento through an ACL
+     * Mantiene estabilidad en las interfaces de acceso a datos para clientes */
+    ContextoDistribucion [ACL]<-[U] ContextoProcesamiento
+
+    /* ContextoDistribucion consumes from Recoleccion through an ACL
+     * Aísla cambios en la gestión de proveedores del sistema de distribución */
+    ContextoDistribucion [ACL]<-[U] ContextoRecoleccion
 }
 
 
