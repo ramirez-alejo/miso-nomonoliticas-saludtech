@@ -1,0 +1,171 @@
+Domain RecaudacionImagenes {
+  domainVisionStatement = "Recaudar y gestionar imágenes médicas de calidad para su procesamiento y distribución"
+
+  Subdomain GestionProveedores {
+    /* La gestión de proveedores de salud es un subdominio esencial ya que el negocio depende de una red 
+    sólida de proveedores de salud para recibir las imágenes médicas */
+    
+    type = SUPPORTING_DOMAIN
+    domainVisionStatement = "Gestionar proveedores de imágenes médicas cumpliendo normativas de salud"
+
+    Entity Proveedor {
+      Long id
+      String nombre
+      String direccion
+      String contacto
+      String tipoProveedor
+    }
+  }
+
+  Subdomain Recoleccion {
+    /*Este subdominio está relacionado con la estrategia principal de la compañía que busca recolectar imágenes 
+    médicas de los proveedores de salud*/
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Recolección eficiente de imágenes médicas para su procesamiento posterior"
+
+    Entity Imagen {
+      Long proveedor_id
+      String formato
+      String fecha_envio
+      String estado
+    }
+  }
+
+  Subdomain Anonimizacion {
+    /*La anonimización de los datos médicos es esencial para evitar el manejo de información sensible*/
+
+    /*Proteger datos sensibles es esencial, pero hay estándares y herramientas existentes (DICOM, HIPAA, GDPR)*/
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Garantizar la anonimización de datos médicos para proteger la privacidad"
+  }
+}
+
+Domain Procesar {
+  domainVisionStatement = "Procesar las imagenes recibidas de los proveedores para su distribución"
+
+  Subdomain Canonizacion {
+    /* La canonización de las imágenes médicas, es decir, asegurarse de que las imágenes estén en un formato estándar (por ejemplo, DICOM),
+     es una actividad necesaria, pero genérica, ya que cualquier empresa que maneje imágenes médicas en el sector tiene un proceso similar y automatizado. */
+    
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Normalizar imágenes médicas para su integración y análisis"
+  }
+
+  Subdomain Procesamiento {
+    /*el procesamiento de las imágenes médicas para entrenar modelos de IA es una actividad clave que está alineada con la ventaja competitiva de STA*/
+    
+    type = CORE_DOMAIN
+    domainVisionStatement = "Procesar imágenes médicas con inteligencia artificial para diagnóstico preciso"
+  }
+}
+
+Domain Distribuir {
+  domainVisionStatement = "Gestionar la distribución de imágenes médicas y diagnósticos anonimizados a los clientes, garantizando acceso controlado y entrega de datos según los diferentes niveles de suscripción."
+
+  Subdomain Membresia {
+    /*
+      Gestiona los planes de suscripción y acceso a los servicios de distribución de imágenes.
+      Incluye la administración de clientes en los planes Standard, Pro y Enterprise, 
+      asegurando que cada usuario tenga los permisos adecuados según su nivel de suscripción.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Facilitar la administración de membresías y accesos a los servicios de distribución de datos según los diferentes niveles de suscripción."
+
+    Entity Cliente {
+      Long id
+      String nombre
+      String correo
+      String tipoMembresia
+    }
+  }
+
+  Subdomain Busqueda {
+    /*
+      Proporciona un motor de búsqueda avanzado para que los usuarios puedan encontrar 
+      imágenes y diagnósticos relevantes dentro de la base de datos de STA. 
+      Implementa filtros según modalidad, etiquetas DICOM, tipo de estudio y otros criterios clave.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Optimizar la localización de imágenes y diagnósticos mediante un sistema de búsqueda y filtrado avanzado."
+  }
+
+  Subdomain Descarga {
+    /*
+      Gestiona el proceso de generación, preparación y entrega de los datos seleccionados por el usuario. 
+      Soporta la conversión y exportación en formatos como JSON y DICOM, 
+      notificando a los clientes cuando los archivos están listos para su descarga.
+    */
+
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Garantizar la entrega eficiente de los datos seleccionados por los clientes en los formatos requeridos."
+  }
+
+  Subdomain AmbienteVirtual {
+    /*
+      Encargado de la creación y mantenimiento de los entornos cloud personalizados 
+      para los clientes Pro y Enterprise. Permite el acceso a bases de datos dedicadas, 
+      ejecución de consultas y entrenamiento de modelos sobre datasets específicos.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Proveer entornos virtuales escalables y seguros para la manipulación y análisis avanzado de los datos distribuidos."
+  }
+
+  Subdomain Consultoria {
+    /*
+      Brinda soporte y capacitación a los clientes para el uso óptimo de los datos, 
+      ayudándolos a entender cómo pueden integrar las imágenes y diagnósticos en sus flujos de trabajo de IA.
+      Incluye asesoramiento técnico, buenas prácticas y soporte postventa.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Ofrecer asesoría técnica y capacitación para maximizar el valor del uso de los datos distribuidos."
+  }
+
+  Subdomain Atribucion {
+    /*
+      Administra la trazabilidad del origen de las imágenes distribuidas, permitiendo identificar 
+      a qué proveedor pertenece cada imagen. Esto es fundamental para la gestión de pagos, ya que 
+      permite calcular la compensación a los proveedores en función del uso de sus imágenes en la plataforma.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Garantizar la trazabilidad del origen de los datos distribuidos para gestionar compensaciones a los proveedores."
+  }
+}
+
+
+UserStory RegisterProviders {
+  As an "Administrator"
+    I want to "register" a "Proveedor" with its "nombre", "direccion", "contacto" , "tipoProveedor"
+  so that "i can manage the network of medical image providers efficiently."
+}
+
+UserStory UploadMedicalImages {
+  As a "Proveedor"
+    I want to "upload" an "Imagen" with its "proveedor_id", "formato", "fecha_envio" , "estado"
+  so that "the medical images can be collected for further processing."
+}
+
+UserStory ManageSubscriptions {
+  As an "Administrator"
+    I want to "assign" a "tipoMembresia" to a "Cliente"
+    I want to "update" a "tipoMembresia" to a "Cliente"
+  so that "i can control the access level of each client based on their subscription."
+}
+
+UserStory SearchMedicalImages {
+  As a "Cliente"
+    I want to "search" a "Imagen" with its "modalidad", "etiquetas DICOM" , "tipo de estudio"
+  so that "i can quickly find relevant medical images."
+}
+
+UserStory DownloadMedicalData {
+  As a "Cliente"
+    I want to "download" an "Imagen"
+  so that "i can analyze the data in my own environment."
+}
+

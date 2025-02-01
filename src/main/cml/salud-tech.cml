@@ -1,0 +1,354 @@
+Domain RecaudacionImagenes {
+    domainVisionStatement = "Recolectar y gestionar imágenes médicas de forma segura y eficiente desde múltiples proveedores de salud"
+
+    Subdomain GestionProveedores {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Gestionar relaciones con centros de salud y laboratorios para la obtención de datos médicos"
+
+        Entity ProveedorSalud {
+            Long id
+            String nombre
+            String pais
+            String tipo // hospital, clínica, laboratorio
+            String estado // activo, inactivo
+            Date fechaIntegracion
+        }
+    }
+
+    Subdomain Ingestion {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Gestionar la importación segura de datos desde infraestructuras on-premise a la nube"
+
+        Entity TrabajoImportacion {
+            Long id
+            Long proveedorId
+            String estado
+            String fuenteDatos // Google Drive, Dropbox, Data Center
+            Date fechaInicio
+            Date fechaFinalizacion
+        }
+    }
+
+    Subdomain Anonimizacion {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Garantizar la eliminación segura de información sensible en imágenes médicas"
+
+        Entity ProcesoAnonimizacion {
+            Long id
+            String modalidad // rayos X, tomografía, resonancia, etc.
+            String regionAnatomica
+            String estado
+            String pipeline
+        }
+    }
+}
+
+Domain Procesamiento {
+    domainVisionStatement = "Procesar y enriquecer imágenes médicas con metadatos y etiquetas para su uso en IA"
+
+    Subdomain ProcesadorImagenes {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Ejecutar pipelines especializados para diferentes tipos de imágenes médicas"
+
+        Entity Pipeline {
+            Long id
+            String tipo
+            String modalidad
+            String regionAnatomica
+            String version
+        }
+    }
+
+    Subdomain Etiquetado {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Extraer y gestionar metadatos y etiquetas de las imágenes médicas"
+
+        Entity Metadatos {
+            Long id
+            String grupoDemografico
+            String entornoClinico
+            String fase
+            String condicion
+        }
+    }
+
+    Subdomain Almacenamiento {
+        type = GENERIC_SUBDOMAIN
+        domainVisionStatement = "Gestionar el almacenamiento seguro y aislado de datos por proveedor"
+
+        Entity Contenedor {
+            Long id
+            Long proveedorId
+            String region
+            String tipo // privado, compartido
+            Double capacidad
+        }
+    }
+}
+
+Domain Distribucion {
+    domainVisionStatement = "Proporcionar acceso seguro y eficiente a datos médicos para entrenamiento de IA"
+
+    Subdomain GestionClientes {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Administrar cuentas de cliente y niveles de servicio"
+
+        Entity Cliente {
+            Long id
+            String nombre
+            String tipo // Standard, Pro, Enterprise
+            Date fechaRegistro
+            String estado
+        }
+    }
+
+    Subdomain AccesoDatos {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Gestionar búsqueda y acceso a datos según nivel de suscripción"
+
+        Entity Consulta {
+            Long id
+            Long clienteId
+            String criterios
+            String estado
+            Date fechaEjecucion
+        }
+    }
+
+    Subdomain AmbienteVirtual {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Provisionar y gestionar ambientes cloud dedicados para clientes Pro y Enterprise"
+
+        Entity Ambiente {
+            Long id
+            Long clienteId
+            String tipo
+            String estado
+            Date fechaCreacion
+        }
+    }
+
+    Subdomain Seguridad {
+        type = SUPPORTING_DOMAIN
+        domainVisionStatement = "Garantizar cumplimiento HIPAA y seguridad en el acceso a datos"
+
+        Entity Auditoria {
+            Long id
+            String operacion
+            String usuario
+            Date fecha
+            String resultado
+        }
+    }
+
+    Subdomain Atribucion {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Gestionar la trazabilidad y compensación por el uso de imágenes médicas a los proveedores"
+
+        Entity UsoImagen {
+            Long id
+            Long imagenId
+            Long proveedorId
+            Long clienteId
+            Date fechaUso
+            String tipoUso // descarga, consulta, entrenamiento
+            Double compensacion
+        }
+
+        Entity CompensacionProveedor {
+            Long id
+            Long proveedorId
+            Date periodoInicio
+            Date periodoFin
+            Double montoTotal
+            String estado // pendiente, pagado, cancelado
+            Date fechaPago
+        }
+    }
+}
+
+BoundedContext ContextoRecoleccion implements GestionProveedores, Ingestion, Anonimizacion {
+    Module seguridad {
+        Aggregate AccesoProveedor {
+            Entity Credenciales {
+                String usuario
+                String tipoAutenticacion // MFA, SSO, etc.
+                String estado
+                Date ultimoAcceso
+            }
+            Entity PermisosCarga {
+                String tipoPermiso // upload, delete, view
+                String alcance // all, specific folders
+                Date expiracion
+            }
+        }
+    }
+}
+
+BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
+    Module clasificacion {
+        Aggregate Modalidad {
+            Entity TipoModalidad {
+                String codigo // RX, TC, RM, etc.
+                String nombre
+                String descripcion
+                Boolean activo
+            }
+            ValueObject ConfiguracionProcesamiento {
+                String parametros
+                String versionAlgoritmo
+            }
+        }
+        
+        Aggregate RegionAnatomica {
+            Entity TipoRegion {
+                String codigo
+                String nombre
+                String descripcion
+                String sistemaCodificacion // SNOMED-CT, etc.
+            }
+            ValueObject Localizacion {
+                String coordenadas
+                String referencias
+            }
+        }
+        
+        Aggregate Diagnostico {
+            Entity Patologia {
+                String codigo
+                String nombre
+                String descripcion
+                String clasificacionICD
+            }
+            ValueObject Hallazgos {
+                String descripcion
+                String severidad
+                String confianza
+            }
+        }
+    }
+}
+
+BoundedContext ContextoDistribucion implements GestionClientes, AccesoDatos, AmbienteVirtual, Atribucion {
+    Module ambienteVirtual {
+        Aggregate SeguridadAmbiente {
+            Entity ControlAcceso {
+                String tipoAmbiente // Pro, Enterprise
+                String politicaSeguridad
+                String nivelAislamiento
+                String regionCloud
+            }
+            Entity Auditoria {
+                String tipoOperacion
+                Date timestamp
+                String usuario
+                String resultado
+            }
+            ValueObject ConfiguracionRed {
+                String vpcConfig
+                String firewallRules
+                String encryptionKeys
+            }
+        }
+    }
+}
+
+BoundedContext ContextoSeguridad implements Seguridad {
+    Module cumplimiento {
+        Aggregate HIPAA {
+            Entity RegistroAuditoria {
+                String tipoEvento
+                Date timestamp
+                String usuario
+                String recurso
+                String resultado
+            }
+            Entity PoliticaPrivacidad {
+                String version
+                Date fechaEfectiva
+                String alcance
+                Boolean activa
+            }
+        }
+    }
+}
+
+/* Context Map showing relationships between bounded contexts */
+ContextMap SaludTechContextMap {
+    state = TO_BE
+    
+    contains ContextoRecoleccion
+    contains ContextoProcesamiento
+    contains ContextoDistribucion
+    contains ContextoSeguridad
+
+    /* ContextoSeguridad is upstream to all other contexts as it enforces security policies */
+    ContextoRecoleccion [D] <- [U] ContextoSeguridad
+    ContextoProcesamiento [D] <- [U] ContextoSeguridad
+    ContextoDistribucion [D] <- [U] ContextoSeguridad
+
+    /* ContextoRecoleccion provides data to ContextoProcesamiento */
+    ContextoProcesamiento [D] <- [U] ContextoRecoleccion
+
+    /* ContextoDistribucion consumes from both Recoleccion and Procesamiento */
+    ContextoDistribucion [D] <- [U] ContextoRecoleccion
+    ContextoDistribucion [D] <- [U] ContextoProcesamiento
+}
+
+
+
+
+UserStory RegistrarProveedor {
+    As a "Administrador"
+        I want to "registrar" a "ProveedorSalud"
+    so that "pueda comenzar a recibir imágenes médicas de un nuevo centro de salud."
+}
+
+UserStory ImportarDatos {
+    As a "Ingeniero de Datos"
+        I want to "iniciar" a "TrabajoImportacion"
+    so that "pueda transferir imágenes médicas desde la infraestructura del proveedor a nuestra nube."
+}
+
+UserStory AdministracionDeSubscripciones {
+  As an "Administrador"
+    I want to "Asignar" a "tipo membresia" to a "Cliente"
+    I want to "Actualizar" a "tipo membresia" to a "Cliente"
+  so that "pueda controlar el acceso a los servicios de distribución de imágenes."
+}
+
+UserStory CrearAmbiente {
+    As a "Ingeniero Cloud"
+        I want to "provisionar" an "Ambiente"
+    so that "los clientes Pro y Enterprise puedan acceder a sus datos en un ambiente dedicado."
+}
+
+UserStory BuscarDatos {
+    As a "Cliente"
+        I want to "ejecutar" a "Consulta"
+    so that "pueda encontrar imágenes médicas relevantes para mi investigación."
+}
+
+UserStory DecargaDeDatos {
+  As a "Cliente"
+    I want to "descargar" an "Imagen o conjunto de datos"
+  so that "pueda utilizarlos para entrenar modelos de IA."
+}
+
+UserStory MonitorearSeguridad {
+    As a "Oficial de Seguridad"
+        I want to "revisar" an "Auditoria"
+    so that "pueda asegurar el cumplimiento de las normas HIPAA."
+}
+
+UserStory CalcularCompensacion {
+    As a "Administrador Financiero"
+        I want to "generar" a "CompensacionProveedor"
+    so that "pueda pagar a los proveedores según el uso de sus imágenes médicas."
+}
+
+UserStory MonitorearUsoImagenes {
+    As a "Analista de Datos"
+        I want to "analizar" a "UsoImagen"
+    so that "pueda entender los patrones de uso y optimizar la compensación a proveedores."
+}
