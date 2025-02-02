@@ -1,0 +1,185 @@
+Domain RecaudacionImagenes {
+  domainVisionStatement = "Recaudar y gestionar imágenes médicas de calidad para su procesamiento y distribución"
+
+  Subdomain GestionProveedores {
+    /* La gestión de proveedores de salud es un subdominio esencial ya que el negocio depende de una red 
+    sólida de proveedores de salud para recibir las imágenes médicas */
+    
+    type = SUPPORTING_DOMAIN
+    domainVisionStatement = "Gestionar proveedores de imágenes médicas cumpliendo normativas de salud"
+
+    Entity Proveedor {
+      Long id
+      String nombre
+      String direccion
+      String contacto
+      String tipoProveedor
+    }
+  }
+
+  Subdomain Recoleccion {
+    /*Este subdominio está relacionado con la estrategia principal de la compañía que busca recolectar imágenes 
+    médicas de los proveedores de salud*/
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Recolección eficiente de imágenes médicas para su procesamiento posterior"
+
+    Entity Imagen {
+      Long proveedor_id
+      String formato
+      String fecha_envio
+      String estado
+    }
+  }
+
+  Subdomain Anonimizacion {
+    /*La anonimización de los datos médicos es esencial para evitar el manejo de información sensible*/
+
+    /*Proteger datos sensibles es esencial, pero hay estándares y herramientas existentes (DICOM, HIPAA, GDPR)*/
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Garantizar la anonimización de datos médicos para proteger la privacidad"
+  }
+}
+
+Domain Procesar {
+  domainVisionStatement = "Procesar las imagenes recibidas de los proveedores para su distribución"
+
+  Subdomain Canonizacion {
+    /* La canonización de las imágenes médicas, es decir, asegurarse de que las imágenes estén en un formato estándar (por ejemplo, DICOM),
+     es una actividad necesaria, pero genérica, ya que cualquier empresa que maneje imágenes médicas en el sector tiene un proceso similar y automatizado. */
+    
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Normalizar imágenes médicas para su integración y análisis"
+  }
+
+  Subdomain Procesamiento {
+    /*el procesamiento de las imágenes médicas para entrenar modelos de IA es una actividad clave que está alineada con la ventaja competitiva de STA*/
+    
+    type = CORE_DOMAIN
+    domainVisionStatement = "Procesar imágenes médicas con inteligencia artificial para diagnóstico preciso"
+  }
+}
+
+Domain Distribuir {
+  domainVisionStatement = "Gestionar la distribución de imágenes médicas y diagnósticos anonimizados a los clientes, garantizando acceso controlado y entrega de datos según los diferentes niveles de suscripción."
+
+  Subdomain Membresia {
+    /*
+      Gestiona los planes de suscripción y acceso a los servicios de distribución de imágenes.
+      Incluye la administración de clientes en los planes Standard, Pro y Enterprise, 
+      asegurando que cada usuario tenga los permisos adecuados según su nivel de suscripción.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Facilitar la administración de membresías y accesos a los servicios de distribución de datos según los diferentes niveles de suscripción."
+
+    Entity Cliente {
+      Long id
+      String nombre
+      String correo
+      String tipoMembresia
+    }
+  }
+
+  Subdomain Busqueda {
+    /*
+      Proporciona un motor de búsqueda avanzado para que los usuarios puedan encontrar 
+      imágenes y diagnósticos relevantes dentro de la base de datos de STA. 
+      Implementa filtros según modalidad, etiquetas DICOM, tipo de estudio y otros criterios clave.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Optimizar la localización de imágenes y diagnósticos mediante un sistema de búsqueda y filtrado avanzado."
+  }
+
+  Subdomain Descarga {
+    /*
+      Gestiona el proceso de generación, preparación y entrega de los datos seleccionados por el usuario. 
+      Soporta la conversión y exportación en formatos como JSON y DICOM, 
+      notificando a los clientes cuando los archivos están listos para su descarga.
+    */
+
+    type = GENERIC_SUBDOMAIN
+    domainVisionStatement = "Garantizar la entrega eficiente de los datos seleccionados por los clientes en los formatos requeridos."
+  }
+
+  Subdomain AmbienteVirtual {
+    /*
+      Encargado de la creación y mantenimiento de los entornos cloud personalizados 
+      para los clientes Pro y Enterprise. Permite el acceso a bases de datos dedicadas, 
+      ejecución de consultas y entrenamiento de modelos sobre datasets específicos.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Proveer entornos virtuales escalables y seguros para la manipulación y análisis avanzado de los datos distribuidos."
+  }
+
+  Subdomain Consultoria {
+    /*
+      Brinda soporte y capacitación a los clientes para el uso óptimo de los datos, 
+      ayudándolos a entender cómo pueden integrar las imágenes y diagnósticos en sus flujos de trabajo de IA.
+      Incluye asesoramiento técnico, buenas prácticas y soporte postventa.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Ofrecer asesoría técnica y capacitación para maximizar el valor del uso de los datos distribuidos."
+  }
+
+  Subdomain Atribucion {
+    /*
+      Administra la trazabilidad del origen de las imágenes distribuidas, permitiendo identificar 
+      a qué proveedor pertenece cada imagen. Esto es fundamental para la gestión de pagos, ya que 
+      permite calcular la compensación a los proveedores en función del uso de sus imágenes en la plataforma.
+    */
+
+    type = CORE_DOMAIN
+    domainVisionStatement = "Garantizar la trazabilidad del origen de los datos distribuidos para gestionar compensaciones a los proveedores."
+  }
+}
+
+BoundedContext ContextoRecoleccion implements GestionProveedores, Recoleccion, Anonimizacion {
+    /* Contexto más acoplado en el estado actual */
+    Aggregate GestionProveedor {
+        Entity Credenciales {
+            String usuario
+            String clave
+            Date ultimoAcceso
+        }
+    }
+}
+
+BoundedContext ContextoProcesamiento implements Canonizacion, Procesamiento {
+    /* Implementación básica sin la modularización avanzada del to-be */
+    Aggregate ProcesadorImagenes {
+        Entity ConfiguracionProcesamiento {
+            String tipo
+            String parametros
+            Boolean activo
+        }
+    }
+}
+
+BoundedContext ContextoDistribucion implements Membresia, Busqueda, Descarga, AmbienteVirtual, Consultoria, Atribucion {
+    /* Contexto más acoplado que maneja múltiples responsabilidades */
+    Aggregate GestionAcceso {
+        Entity Control {
+            String tipoCliente
+            String permisos
+            Boolean activo
+        }
+    }
+}
+
+/* Context Map for AS-IS state - Shows more coupled relationships */
+ContextMap SaludTechActualMap {
+    state = AS_IS
+    
+    contains ContextoRecoleccion
+    contains ContextoProcesamiento
+    contains ContextoDistribucion
+
+    /* Relaciones más acopladas en el estado actual usando Shared Kernel */
+    ContextoRecoleccion [SK]<->[SK] ContextoProcesamiento 
+    ContextoProcesamiento [SK]<->[SK] ContextoDistribucion
+    ContextoRecoleccion [SK]<->[SK] ContextoDistribucion
+}

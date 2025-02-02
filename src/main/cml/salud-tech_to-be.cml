@@ -273,23 +273,6 @@ BoundedContext ContextoSeguridad implements Seguridad {
     }
 }
 
-
-/* ContextMap SaludTechActualMap {
-    state = AS_IS
-    
-    contains ContextoRecoleccion
-    contains ContextoProcesamiento
-    contains ContextoDistribucion
-    contains ContextoSeguridad
-
-    ContextoRecoleccion [SK]<->[SK] ContextoProcesamiento 
-    ContextoProcesamiento [SK]<->[SK] ContextoDistribucion
-    
-    ContextoRecoleccion [P]<->[P] ContextoSeguridad 
-    ContextoProcesamiento [P]<->[P] ContextoSeguridad
-    ContextoDistribucion [P]<->[P] ContextoSeguridad
-} */
-
 ContextMap SaludTechFuturoMap {
     state = TO_BE
     
