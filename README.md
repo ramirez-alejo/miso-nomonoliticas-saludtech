@@ -11,6 +11,9 @@ Integrantes:
 ## Descripción
 Este proyecto contiene el codigo del proyecto del curso para el grupo 20.
 
-## [Context Mapper (Entrega 1 y 2)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/blob/master/ContextMapper/README.md)
+
+## [Arquitectura (Entrega 1)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-1)
+
+## [Arquitectura (Entrega 2)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-2)
 
 ## [Arquitectura (Entrega 3)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3)
