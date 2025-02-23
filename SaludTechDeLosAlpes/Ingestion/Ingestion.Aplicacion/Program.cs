@@ -1,4 +1,5 @@
 using Core.Infraestructura;
+using Core.Infraestructura.MessageBroker;
 using Ingestion.Aplicacion.Comandos;
 using Ingestion.Aplicacion.Consultas;
 using Ingestion.Infraestructura.Persistencia;
@@ -17,8 +18,20 @@ public class Program
 		var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:DefaultConnection")
 			?? builder.Configuration.GetConnectionString("DefaultConnection");
 		
+		var pulsarUrl = Environment.GetEnvironmentVariable("PULSAR_URL") 
+			?? builder.Configuration.GetValue<string>("PulsarSettings:ServiceUrl") 
+			?? "pulsar://localhost:6650";
+
+		var imagenCreadaTopic = Environment.GetEnvironmentVariable("PULSAR_TOPIC_IMAGEN_CREADA") 
+			?? builder.Configuration.GetValue<string>("PulsarSettings:Topics:ImagenCreada") 
+			?? "imagen-creada-topic";
+
 		// Log to the console
 		builder.Logging.AddConsole();
+
+		// Register MessageProducer
+		builder.Services.AddSingleton<IMessageProducer>(sp => 
+			new MessageProducer(pulsarUrl, imagenCreadaTopic));
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>
