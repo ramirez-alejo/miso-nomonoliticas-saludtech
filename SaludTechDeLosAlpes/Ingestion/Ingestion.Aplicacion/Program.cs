@@ -20,18 +20,18 @@ public class Program
 
 		
 		// Configure message broker
-		var pulsarHost = Environment.GetEnvironmentVariable("PULSAR_HOST") 
+		var brokerHost = Environment.GetEnvironmentVariable("MessageBroker:Host") 
 						 ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
 						 ?? "localhost";
 
-		var pulsarPort = Environment.GetEnvironmentVariable("PULSAR_PORT") != null
-			? int.Parse(Environment.GetEnvironmentVariable("PULSAR_PORT"))
+		var brokerPort = Environment.GetEnvironmentVariable("MessageBroker:Port") != null
+			? int.Parse(Environment.GetEnvironmentVariable("MessageBroker:Port"))
 			: builder.Configuration.GetValue<int>("MessageBroker:Port", 6650);
 
 		// Configure MessageBroker settings
 		builder.Services.Configure<MessageBrokerSettings>(settings => {
-			settings.Host = pulsarHost;
-			settings.Port = pulsarPort;
+			settings.Host = brokerHost;
+			settings.Port = brokerPort;
 		});
 
 		// Log to the console

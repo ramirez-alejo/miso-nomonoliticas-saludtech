@@ -1,4 +1,5 @@
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
+using Consulta.Aplicacion.Modalidad.Persistencia.Mapeo;
 using Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;
 using Consulta.Dominio.Eventos;
 
@@ -21,26 +22,18 @@ public class ImagenModalidadHandler
     {
         try
         {
-            _logger.LogInformation("Procesando Modalidad de Imagen para ImagenId: {ImagenId}", evento.ImagenId);
-
+            
             if (evento == null)
             {
                 _logger.LogWarning("Could not deserialize message to ImagenModalidadEvent");
                 return;
             }
+            
+            _logger.LogInformation("Procesando Modalidad de Imagen para ImagenId: {ImagenId}", evento?.ImagenId);
 
-            var entity = new ImagenModalidadEntity
-            {
-                Id = Guid.NewGuid(), // This will be ignored for existing entities due to upsert logic
-                ImagenId = evento.ImagenId,
-                Nombre = evento.Nombre,
-                Descripcion = evento.Descripcion,
-                RegionAnatomica = evento.RegionAnatomica,
-                RegionDescripcion = evento.RegionDescripcion,
-                FechaCreacion = evento.FechaCreacion
-            };
+            var imagen = MapeoModalidaImagen.MapFromEvent(evento);
 
-            await _repository.UpsertAsync(entity);
+            await _repository.UpsertAsync(imagen, CancellationToken.None);
 
             _logger.LogInformation("Successfully processed imagen modalidad event for ImagenId: {ImagenId}",
                 evento.ImagenId);

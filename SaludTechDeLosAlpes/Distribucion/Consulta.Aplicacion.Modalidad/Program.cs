@@ -17,25 +17,26 @@ var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:Def
 
 builder.Services.AddDbContext<ImagenModalidadDbContext>(options =>
     options.UseNpgsql(connectionString, o =>
-    {
-        o.EnableRetryOnFailure(5);
-    })
+        {
+            o.EnableRetryOnFailure(5);
+        })
     .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 
 // Configure message broker
-var pulsarHost = Environment.GetEnvironmentVariable("PULSAR_HOST") 
+var brokerHost = Environment.GetEnvironmentVariable("MessageBroker:Host") 
     ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
     ?? "localhost";
 
-var pulsarPort = Environment.GetEnvironmentVariable("PULSAR_PORT") != null
-    ? int.Parse(Environment.GetEnvironmentVariable("PULSAR_PORT"))
+var brokerPort = Environment.GetEnvironmentVariable("MessageBroker:Port") != null
+    ? int.Parse(Environment.GetEnvironmentVariable("MessageBroker:Port"))
     : builder.Configuration.GetValue<int>("MessageBroker:Port", 6650);
 
 // Configure MessageBroker settings
 builder.Services.Configure<MessageBrokerSettings>(settings => {
-    settings.Host = pulsarHost;
-    settings.Port = pulsarPort;
+    settings.Host = brokerHost;
+    settings.Port = brokerPort;
 });
+builder.Services.AddSingleton<MessageBrokerSettings>();
 
 // Log to the console
 builder.Logging.AddConsole();
@@ -43,8 +44,8 @@ builder.Logging.AddConsole();
 // Register repositories and services
 builder.Services.AddScoped<IImagenModalidadRepository, ImagenModalidadRepository>();
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
-builder.Services.AddSingleton<ImagenModalidadHandler>();
+builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+builder.Services.AddScoped<ImagenModalidadHandler>();
 builder.Services.AddHostedService<ImagenModalidadSubscriptionWorker>();
 
 // Add mediator
@@ -84,22 +85,11 @@ app.MapGet("/health", () => Results.Ok());
 app.MapGet("/version", () => Results.Ok("1.0.0"));
 
 // API endpoints
-app.MapGet("/api/modalidad/{id:guid}", async (Guid id, IMediator mediator) =>
+app.MapPost("/api/modalidad/buscar", async (IMediator mediator, ImagenModalidadConsulta query) =>
 {
-    var response = await mediator.Send(new ImagenModalidadConsulta { Id = id });
-    return response.Imagenes.Any() ? Results.Ok(response) : Results.NotFound();
+    var result = await mediator.Send(query);
+    return Results.Ok(result);
 });
 
-app.MapGet("/api/modalidad/imagen/{imagenId:guid}", async (Guid imagenId, IMediator mediator) =>
-{
-    var response = await mediator.Send(new ImagenModalidadConsulta { ImagenId = imagenId });
-    return response.Imagenes.Any() ? Results.Ok(response) : Results.NotFound();
-});
-
-app.MapGet("/api/modalidad", async (IMediator mediator) =>
-{
-    var response = await mediator.Send(new ImagenModalidadConsulta());
-    return Results.Ok(response);
-});
 
 app.Run();

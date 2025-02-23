@@ -370,3 +370,7 @@ appsettings.tests.json
 /Postman/*.postman_environment.json
 local.env
 launchSettings.json
+
+
+/SaludTechDeLosAlpes/data/bookkeeper/*
+/SaludTechDeLosAlpes/data/zookeeper/*

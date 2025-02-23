@@ -10,24 +10,25 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 // Configure message broker
-var pulsarHost = Environment.GetEnvironmentVariable("PULSAR_HOST") 
-    ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
-    ?? "localhost";
+var brokerHost = Environment.GetEnvironmentVariable("MessageBroker:Host") 
+                 ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
+                 ?? "localhost";
 
-var pulsarPort = Environment.GetEnvironmentVariable("PULSAR_PORT") != null
-    ? int.Parse(Environment.GetEnvironmentVariable("PULSAR_PORT"))
+var brokerPort = Environment.GetEnvironmentVariable("MessageBroker:Port") != null
+    ? int.Parse(Environment.GetEnvironmentVariable("MessageBroker:Port"))
     : builder.Configuration.GetValue<int>("MessageBroker:Port", 6650);
 
 // Configure MessageBroker settings
 builder.Services.Configure<MessageBrokerSettings>(settings => {
-    settings.Host = pulsarHost;
-    settings.Port = pulsarPort;
+    settings.Host = brokerHost;
+    settings.Port = brokerPort;
 });
+builder.Services.AddSingleton<MessageBrokerSettings>();
 
 // Register message broker services
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
-builder.Services.AddSingleton<ImagenCreadaHandler>();
+builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+builder.Services.AddScoped<ImagenCreadaHandler>();
 
 // Register background worker
 builder.Services.AddHostedService<ImagenSubscriptionWorker>();

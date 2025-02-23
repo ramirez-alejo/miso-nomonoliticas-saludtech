@@ -27,11 +27,17 @@ public class ImagenModalidadDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ImagenId).IsRequired();
             entity.HasIndex(e => e.ImagenId).IsUnique();
-            entity.Property(e => e.Nombre).IsRequired();
-            entity.Property(e => e.Descripcion).IsRequired();
-            entity.Property(e => e.RegionAnatomica).IsRequired();
-            entity.Property(e => e.RegionDescripcion).IsRequired();
-            entity.Property(e => e.FechaCreacion).IsRequired();
+            entity.Property(e => e.Nombre);
+            entity.Property(e => e.Descripcion);
+            entity.Property(e => e.RegionAnatomica);
+            entity.Property(e => e.RegionDescripcion);
+            entity.Property(e => e.FechaCreacion);
+    
+            // Create GIN indexes for text columns
+            entity.HasIndex(e => e.Nombre).HasMethod("GIN").HasOperators("gin_trgm_ops");
+            entity.HasIndex(e => e.Descripcion).HasMethod("GIN").HasOperators("gin_trgm_ops");
+            entity.HasIndex(e => e.RegionAnatomica).HasMethod("GIN").HasOperators("gin_trgm_ops");
+            entity.HasIndex(e => e.RegionDescripcion).HasMethod("GIN").HasOperators("gin_trgm_ops");
         });
     }
 }

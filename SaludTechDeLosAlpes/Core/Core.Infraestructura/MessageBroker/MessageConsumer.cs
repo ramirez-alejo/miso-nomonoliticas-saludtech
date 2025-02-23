@@ -1,6 +1,7 @@
 using System;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Pulsar.Client.Api;
 using Pulsar.Client.Common;
 
@@ -13,10 +14,10 @@ namespace Core.Infraestructura.MessageBroker
         private bool _disposed;
         private bool _isRunning;
 
-        public MessageConsumer(string serviceUrl)
+        public MessageConsumer(IOptions<MessageBrokerSettings> settings)
         {
             _client = new PulsarClientBuilder()
-                .ServiceUrl(serviceUrl)
+                .ServiceUrl(settings.Value.ServiceUrl)
                 .BuildAsync().Result;
         }
 
