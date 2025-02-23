@@ -53,6 +53,13 @@ public class Program
 			config.DocExpansion = "list";
 			config.PersistAuthorization = true;
 		});
+		
+		// If the Db doesn't exist, create it
+		using var scope = app.Services.CreateScope();
+		var dbContext = scope.ServiceProvider.GetRequiredService<ImagenDbContext>();
+
+		// Apply the migrations
+		dbContext.Database.Migrate();
 
 		app.MapGet("/health", () => Results.Ok());
 		
@@ -70,8 +77,6 @@ public class Program
 			return response is null ? Results.NotFound() : Results.Ok(response);
 		});
 		
-
-
 		app.Run();
 	}
 }
