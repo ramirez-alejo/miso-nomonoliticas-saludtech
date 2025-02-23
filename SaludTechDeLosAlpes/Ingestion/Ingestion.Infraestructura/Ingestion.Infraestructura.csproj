@@ -6,4 +6,9 @@
         <Nullable>disable</Nullable>
     </PropertyGroup>
 
+    <ItemGroup>
+      <ProjectReference Include="..\..\Core\Core.Dominio\Core.Dominio.csproj" />
+      <ProjectReference Include="..\..\Core\Core.Infraestructura\Core.Infraestructura.csproj" />
+    </ItemGroup>
+
 </Project>

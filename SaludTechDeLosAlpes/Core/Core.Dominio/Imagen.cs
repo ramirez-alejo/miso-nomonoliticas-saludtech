@@ -1,4 +1,4 @@
-﻿namespace Core.Infraestructura;
+﻿namespace Core.Dominio;
 
 public class Imagen
 {
@@ -7,9 +7,8 @@ public class Imagen
 	public TipoImagen TipoImagen { get; set; }
 	public AtributosImagen AtributosImagen { get; set; }
 	public ContextoProcesal ContextoProcesal { get; set; }
-	public Metadatos Metadatos { get; set; }
+	public Metadatos Metadatos { get; set; }	
 	public Paciente Paciente { get; set; }
-	public EntornoClinico EntornoClinico { get; set; }
 }
 
 public class TipoImagen
