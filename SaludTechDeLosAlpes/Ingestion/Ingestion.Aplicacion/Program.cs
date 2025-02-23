@@ -36,8 +36,8 @@ public class Program
 		builder.Services.AddEndpointsApiExplorer();
 		builder.Services.AddOpenApiDocument(config =>
 		{
-			config.DocumentName = "BlackListAPI";
-			config.Title = "BlackListAPI v1";
+			config.DocumentName = "SaludTechAPI-Ingestion";
+			config.Title = "SaludTechAPI-Ingestion v1";
 			config.Version = "v1";
 		});
 		
