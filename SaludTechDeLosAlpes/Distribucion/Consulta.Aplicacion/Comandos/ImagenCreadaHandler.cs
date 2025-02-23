@@ -1,10 +1,8 @@
+using Consulta.Dominio.Eventos;
 using Core.Dominio;
 using Core.Infraestructura.MessageBroker;
-using Consulta.Dominio.Eventos;
-using Microsoft.Extensions.Logging;
-using System.Text.Json;
 
-namespace Consulta.Aplicacion.Handlers;
+namespace Consulta.Aplicacion.Comandos;
 
 public class ImagenCreadaHandler : IMessageConsumer
 {

@@ -16,22 +16,29 @@ public class Program
 		var builder = WebApplication.CreateBuilder(args);
 		
 		var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:DefaultConnection")
-			?? builder.Configuration.GetConnectionString("DefaultConnection");
-		
-		var pulsarUrl = Environment.GetEnvironmentVariable("PULSAR_URL") 
-			?? builder.Configuration.GetValue<string>("PulsarSettings:ServiceUrl") 
-			?? "pulsar://localhost:6650";
+							   ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
-		var imagenCreadaTopic = Environment.GetEnvironmentVariable("PULSAR_TOPIC_IMAGEN_CREADA") 
-			?? builder.Configuration.GetValue<string>("PulsarSettings:Topics:ImagenCreada") 
-			?? "imagen-creada-topic";
+		
+		// Configure message broker
+		var pulsarHost = Environment.GetEnvironmentVariable("PULSAR_HOST") 
+						 ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
+						 ?? "localhost";
+
+		var pulsarPort = Environment.GetEnvironmentVariable("PULSAR_PORT") != null
+			? int.Parse(Environment.GetEnvironmentVariable("PULSAR_PORT"))
+			: builder.Configuration.GetValue<int>("MessageBroker:Port", 6650);
+
+		// Configure MessageBroker settings
+		builder.Services.Configure<MessageBrokerSettings>(settings => {
+			settings.Host = pulsarHost;
+			settings.Port = pulsarPort;
+		});
 
 		// Log to the console
 		builder.Logging.AddConsole();
 
 		// Register MessageProducer
-		builder.Services.AddSingleton<IMessageProducer>(sp => 
-			new MessageProducer(pulsarUrl, imagenCreadaTopic));
+		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>

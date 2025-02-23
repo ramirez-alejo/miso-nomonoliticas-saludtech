@@ -1,5 +1,5 @@
+using Consulta.Aplicacion.Comandos;
 using Core.Infraestructura.MessageBroker;
-using Consulta.Aplicacion.Handlers;
 using Consulta.Aplicacion.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
