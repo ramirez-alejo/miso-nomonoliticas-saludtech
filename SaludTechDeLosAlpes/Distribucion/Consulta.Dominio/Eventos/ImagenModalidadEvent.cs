@@ -8,4 +8,5 @@ public record ImagenModalidadEvent
     public string RegionAnatomica { get; init; }
     public string RegionDescripcion { get; init; }
     public DateTime FechaCreacion { get; init; }
+    public string Version { get; set; } = "1.0.0";
 }

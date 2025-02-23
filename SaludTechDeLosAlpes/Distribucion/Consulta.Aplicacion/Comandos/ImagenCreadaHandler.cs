@@ -30,16 +30,15 @@ public class ImagenCreadaHandler
             }
 
             // Create and publish demographics event
-            var demograficaEvent = new ImagenDemograficaEvent
+            var demografiaEvent = new ImagenDemografiaEvent
             {
                 ImagenId = imagen.Id,
                 GrupoEdad = imagen.Paciente?.Demografia?.GrupoEdad ?? "No especificado",
                 Sexo = imagen.Paciente?.Demografia?.Sexo ?? "No especificado",
                 Etnicidad = imagen.Paciente?.Demografia?.Etnicidad ?? "No especificado",
-                TokenAnonimo = imagen.Paciente?.TokenAnonimo ?? "",
                 FechaCreacion = DateTime.UtcNow
             };
-            await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA, demograficaEvent);
+            await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA, demografiaEvent);
             _logger.LogInformation("Evento deDemografia publicado para la Imagen con Id {ImagenId}", imagen.Id);
 
             // Create and publish modalidad event

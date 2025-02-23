@@ -1,6 +1,6 @@
 using Consulta.Aplicacion.Modalidad.Dtos;
+using Consulta.Aplicacion.Modalidad.Mapeo;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
-using Consulta.Aplicacion.Modalidad.Persistencia.Mapeo;
 using Microsoft.EntityFrameworkCore;
 
 namespace Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;

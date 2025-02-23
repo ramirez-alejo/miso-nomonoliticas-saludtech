@@ -2,7 +2,7 @@ using Consulta.Aplicacion.Modalidad.Dtos;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
 using Consulta.Dominio.Eventos;
 
-namespace Consulta.Aplicacion.Modalidad.Persistencia.Mapeo;
+namespace Consulta.Aplicacion.Modalidad.Mapeo;
 
 public static class MapeoModalidaImagen
 {

@@ -1,5 +1,5 @@
+using Consulta.Aplicacion.Modalidad.Mapeo;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
-using Consulta.Aplicacion.Modalidad.Persistencia.Mapeo;
 using Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;
 using Consulta.Dominio.Eventos;
 
