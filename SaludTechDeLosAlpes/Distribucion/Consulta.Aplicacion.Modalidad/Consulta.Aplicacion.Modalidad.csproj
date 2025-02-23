@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>disable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Mediator.Abstractions" Version="2.1.7" />
+        <PackageReference Include="Mediator.SourceGenerator" Version="2.1.7">
+          <PrivateAssets>all</PrivateAssets>
+          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="NSwag.AspNetCore" Version="14.0.3" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.2" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.2"/>
+        <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core.Infraestructura\Core.Infraestructura.csproj" />
+        <ProjectReference Include="..\Consulta.Dominio\Consulta.Dominio.csproj" />
+        <ProjectReference Include="..\Consulta.Infraestructura\Consulta.Infraestructura.csproj" />
+    </ItemGroup>
+
+</Project>

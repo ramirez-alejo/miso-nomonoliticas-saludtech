@@ -26,8 +26,8 @@ builder.Services.Configure<MessageBrokerSettings>(settings => {
 
 // Register message broker services
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-builder.Services.AddSingleton<MessageConsumer>();
-builder.Services.AddSingleton<IMessageConsumer, ImagenCreadaHandler>();
+builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
+builder.Services.AddSingleton<ImagenCreadaHandler>();
 
 // Register background worker
 builder.Services.AddHostedService<ImagenSubscriptionWorker>();

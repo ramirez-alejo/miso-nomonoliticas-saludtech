@@ -1,23 +1,23 @@
-using Core.Dominio;
 using Core.Infraestructura.MessageBroker;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Consulta.Aplicacion.Comandos;
+using Consulta.Aplicacion.Modalidad.Comandos;
+using Consulta.Dominio.Eventos;
 
-namespace Consulta.Aplicacion.Workers;
+namespace Consulta.Aplicacion.Modalidad.Workers;
 
-public class ImagenSubscriptionWorker : BackgroundService
+public class ImagenModalidadSubscriptionWorker : BackgroundService
 {
-    private readonly ILogger<ImagenSubscriptionWorker> _logger;
+    private readonly ILogger<ImagenModalidadSubscriptionWorker> _logger;
     private readonly IMessageConsumer _messageConsumer;
-    private readonly ImagenCreadaHandler _imagenHandler;
-    private const string TOPIC_IMAGEN_MEDICA = "imagen-medica";
-    private const string SUBSCRIPTION_NAME = "consulta-service";
+    private readonly ImagenModalidadHandler _imagenHandler;
+    private const string TOPIC_IMAGEN_MODALIDAD = "imagen-modalidad";
+    private const string SUBSCRIPTION_NAME = "modalidad-service";
 
-    public ImagenSubscriptionWorker(
-        ILogger<ImagenSubscriptionWorker> logger,
+    public ImagenModalidadSubscriptionWorker(
+        ILogger<ImagenModalidadSubscriptionWorker> logger,
         IMessageConsumer messageConsumer,
-        ImagenCreadaHandler imagenHandler)
+        ImagenModalidadHandler imagenHandler)
     {
         _logger = logger;
         _messageConsumer = messageConsumer;
@@ -29,12 +29,12 @@ public class ImagenSubscriptionWorker : BackgroundService
         try
         {
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}", 
-                TOPIC_IMAGEN_MEDICA, SUBSCRIPTION_NAME);
+                TOPIC_IMAGEN_MODALIDAD, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<Imagen>(
-                TOPIC_IMAGEN_MEDICA,
+            await _messageConsumer.StartAsync<ImagenModalidadEvent>(
+                TOPIC_IMAGEN_MODALIDAD,
                 SUBSCRIPTION_NAME,
-                async (imagen) => await _imagenHandler.HandleImagenCreada(imagen)
+                async (evento) => await _imagenHandler.HandleImagenModalidad(evento)
             );
 
             // Keep the worker running

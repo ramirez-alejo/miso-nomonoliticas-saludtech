@@ -3,6 +3,35 @@ networks:
   pulsar:
     driver: bridge
 services:
+#  modalidad-db:
+#    image: postgres:latest
+#    container_name: modalidad-db
+#    environment:
+#      - POSTGRES_DB=SaludTechModalidadDb
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=postgres
+#    ports:
+#      - "5433:5432"
+#    networks:
+#      - pulsar
+#    volumes:
+#      - ./data/modalidad-db:/var/lib/postgresql/data
+#
+#  modalidad-service:
+#    build:
+#      context: .
+#      dockerfile: Distribucion/Consulta.Aplicacion.Modalidad/Dockerfile
+#    container_name: modalidad-service
+#    environment:
+#      - ASPNETCORE_ENVIRONMENT=Development
+#      - CONNECTION_STRING__DefaultConnection=Server=modalidad-db;Database=SaludTechModalidadDb;Port=5432;User Id=postgres;Password=postgres;
+#      - PULSAR_HOST=broker
+#      - PULSAR_PORT=6650
+#    depends_on:
+#      - modalidad-db
+#      - broker
+#    networks:
+#      - pulsar
   # Start zookeeper
   zookeeper:
     image: apachepulsar/pulsar:latest
