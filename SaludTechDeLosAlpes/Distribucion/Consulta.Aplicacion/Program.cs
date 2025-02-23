@@ -1,51 +1,48 @@
-namespace Consulta.Aplicacion;
+using Core.Infraestructura.MessageBroker;
+using Consulta.Aplicacion.Handlers;
+using Consulta.Aplicacion.Workers;
 
-public class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Add services to the container.
+builder.Services.AddControllers();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+// Configure message broker
+var pulsarHost = Environment.GetEnvironmentVariable("PULSAR_HOST") 
+    ?? builder.Configuration.GetValue<string>("MessageBroker:Host") 
+    ?? "localhost";
+
+var pulsarPort = Environment.GetEnvironmentVariable("PULSAR_PORT") != null
+    ? int.Parse(Environment.GetEnvironmentVariable("PULSAR_PORT"))
+    : builder.Configuration.GetValue<int>("MessageBroker:Port", 6650);
+
+// Configure MessageBroker settings
+builder.Services.Configure<MessageBrokerSettings>(settings => {
+    settings.Host = pulsarHost;
+    settings.Port = pulsarPort;
+});
+
+// Register message broker services
+builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
+builder.Services.AddSingleton<MessageConsumer>();
+builder.Services.AddSingleton<IMessageConsumer, ImagenCreadaHandler>();
+
+// Register background worker
+builder.Services.AddHostedService<ImagenSubscriptionWorker>();
+
+var app = builder.Build();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
 {
-	public static void Main(string[] args)
-	{
-		var builder = WebApplication.CreateBuilder(args);
-
-		// Add services to the container.
-		builder.Services.AddAuthorization();
-
-		// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-		builder.Services.AddEndpointsApiExplorer();
-		builder.Services.AddSwaggerGen();
-
-		var app = builder.Build();
-
-		// Configure the HTTP request pipeline.
-		if (app.Environment.IsDevelopment())
-		{
-			app.UseSwagger();
-			app.UseSwaggerUI();
-		}
-
-		app.UseHttpsRedirection();
-
-		app.UseAuthorization();
-
-		var summaries = new[]
-		{
-			"Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-		};
-
-		app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-			{
-				var forecast = Enumerable.Range(1, 5).Select(index =>
-						new WeatherForecast
-						{
-							Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-							TemperatureC = Random.Shared.Next(-20, 55),
-							Summary = summaries[Random.Shared.Next(summaries.Length)]
-						})
-					.ToArray();
-				return forecast;
-			})
-			.WithName("GetWeatherForecast")
-			.WithOpenApi();
-
-		app.Run();
-	}
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
+
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
+
+app.Run();

@@ -23,6 +23,7 @@ public class CrearImagenMedicaHandler : IRequestHandler<CrearImagenMedicaCommand
     private readonly IImagenRepository _imagenRepository;
     private readonly ILogger<CrearImagenMedicaHandler> _logger;
     private readonly IMessageProducer _messageProducer;
+    private const string TOPIC_IMAGEN_CREADA = "imagen-medica";
 
     public CrearImagenMedicaHandler(
         IImagenRepository imagenRepository,
@@ -46,8 +47,8 @@ public class CrearImagenMedicaHandler : IRequestHandler<CrearImagenMedicaCommand
             DateTime.UtcNow
         );
 
-        await _messageProducer.SendJsonAsync(mensaje);
-        _logger.LogInformation("Mensaje de imagen creada enviado para id {ResultId}", result.Id);
+        await _messageProducer.SendJsonAsync(TOPIC_IMAGEN_CREADA, mensaje);
+        _logger.LogInformation("Mensaje de imagen creada enviado para id {ResultId} en topic {Topic}", result.Id, TOPIC_IMAGEN_CREADA);
 
         return new ImagenMedicaResponse { Id = result.Id };
     }

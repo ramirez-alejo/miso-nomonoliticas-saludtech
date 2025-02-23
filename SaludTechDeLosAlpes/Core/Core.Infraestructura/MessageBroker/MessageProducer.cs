@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Pulsar.Client.Api;
 
 namespace Core.Infraestructura.MessageBroker
@@ -8,34 +10,40 @@ namespace Core.Infraestructura.MessageBroker
     public class MessageProducer : IMessageProducer, IAsyncDisposable
     {
         private readonly PulsarClient _client;
-        private readonly IProducer<byte[]> _producer;
+        private readonly ConcurrentDictionary<string, IProducer<byte[]>> _producers;
         private bool _disposed;
 
-        public MessageProducer(string serviceUrl, string topicName)
+        public MessageProducer(IOptions<MessageBrokerSettings> settings)
         {
             _client = new PulsarClientBuilder()
-                .ServiceUrl(serviceUrl)
+                .ServiceUrl(settings.Value.ServiceUrl)
                 .BuildAsync().Result;
-
-            _producer = _client.NewProducer()
-                .Topic(topicName)
-                .CreateAsync()
-                .Result;
+            _producers = new ConcurrentDictionary<string, IProducer<byte[]>>();
         }
 
-        public async Task<string> SendAsync(byte[] message)
+        private async Task<IProducer<byte[]>> GetOrCreateProducer(string topic)
+        {
+            return await _producers.GetOrAddAsync(topic, async (t) =>
+            {
+                return await _client.NewProducer()
+                    .Topic(t)
+                    .CreateAsync();
+            });
+        }
+
+        public async Task<string> SendAsync(string topic, byte[] message)
         {
             ThrowIfDisposed();
-            var messageId = await _producer.SendAsync(message);
+            var producer = await GetOrCreateProducer(topic);
+            var messageId = await producer.SendAsync(message);
             return messageId.ToString();
         }
 
-        public async Task<string> SendJsonAsync<T>(T message)
+        public async Task<string> SendJsonAsync<T>(string topic, T message)
         {
             ThrowIfDisposed();
             var jsonMessage = JsonSerializer.SerializeToUtf8Bytes(message);
-            var messageId = await _producer.SendAsync(jsonMessage);
-            return messageId.ToString();
+            return await SendAsync(topic, jsonMessage);
         }
 
         private void ThrowIfDisposed()
@@ -50,10 +58,15 @@ namespace Core.Infraestructura.MessageBroker
         {
             if (!_disposed)
             {
-                if (_producer != null)
+                foreach (var producer in _producers.Values)
                 {
-                    await _producer.DisposeAsync();
+                    if (producer != null)
+                    {
+                        await producer.DisposeAsync();
+                    }
                 }
+                _producers.Clear();
+
                 if (_client != null)
                 {
                     await _client.CloseAsync();
@@ -62,5 +75,22 @@ namespace Core.Infraestructura.MessageBroker
             }
             GC.SuppressFinalize(this);
         }
+    }
+}
+
+public static class ConcurrentDictionaryExtensions
+{
+    public static async Task<TValue> GetOrAddAsync<TKey, TValue>(
+        this ConcurrentDictionary<TKey, TValue> dictionary,
+        TKey key,
+        Func<TKey, Task<TValue>> valueFactory)
+    {
+        if (dictionary.TryGetValue(key, out TValue value))
+        {
+            return value;
+        }
+
+        var newValue = await valueFactory(key);
+        return dictionary.GetOrAdd(key, newValue);
     }
 }

@@ -7,8 +7,15 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Mediator.Abstractions" Version="2.1.7" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.13"/>
         <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Core\Core.Infraestructura\Core.Infraestructura.csproj" />
+        <ProjectReference Include="..\Consulta.Dominio\Consulta.Dominio.csproj" />
+        <ProjectReference Include="..\Consulta.Infraestructura\Consulta.Infraestructura.csproj" />
     </ItemGroup>
 
 </Project>
