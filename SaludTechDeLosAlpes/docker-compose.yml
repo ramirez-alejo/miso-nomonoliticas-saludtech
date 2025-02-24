@@ -3,35 +3,153 @@ networks:
   pulsar:
     driver: bridge
 services:
-#  modalidad-db:
-#    image: postgres:latest
-#    container_name: modalidad-db
-#    environment:
-#      - POSTGRES_DB=SaludTechModalidadDb
-#      - POSTGRES_USER=postgres
-#      - POSTGRES_PASSWORD=postgres
-#    ports:
-#      - "5433:5432"
-#    networks:
-#      - pulsar
-#    volumes:
-#      - ./data/modalidad-db:/var/lib/postgresql/data
-#
-#  modalidad-service:
-#    build:
-#      context: .
-#      dockerfile: Distribucion/Consulta.Aplicacion.Modalidad/Dockerfile
-#    container_name: modalidad-service
-#    environment:
-#      - ASPNETCORE_ENVIRONMENT=Development
-#      - CONNECTION_STRING__DefaultConnection=Server=modalidad-db;Database=SaludTechModalidadDb;Port=5432;User Id=postgres;Password=postgres;
-#      - PULSAR_HOST=broker
-#      - PULSAR_PORT=6650
-#    depends_on:
-#      - modalidad-db
-#      - broker
-#    networks:
-#      - pulsar
+  # Databases
+  modalidad-db:
+    image: postgres:latest
+    container_name: modalidad-db
+    environment:
+      - POSTGRES_DB=SaludTechModalidadDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5433:5432"
+    networks:
+      - pulsar
+    volumes:
+      - ./data/modalidad-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  demografia-db:
+    image: postgres:latest
+    container_name: demografia-db
+    environment:
+      - POSTGRES_DB=SaludTechDemografiaDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5434:5432"
+    networks:
+      - pulsar
+    volumes:
+      - ./data/demografia-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  ingestion-db:
+    image: postgres:latest
+    container_name: ingestion-db
+    environment:
+      - POSTGRES_DB=SaludTechIngestionDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5435:5432"
+    networks:
+      - pulsar
+    volumes:
+      - ./data/ingestion-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Services
+  modalidad-service:
+    build:
+      context: .
+      dockerfile: Distribucion/Consulta.Aplicacion.Modalidad/Dockerfile
+    container_name: modalidad-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=modalidad-db;Database=SaludTechModalidadDb;Username=postgres;Password=postgres
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    depends_on:
+      modalidad-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5002:80"
+    restart: on-failure
+
+  demografia-service:
+    build:
+      context: .
+      dockerfile: Distribucion/Consulta.Aplicacion.Demografia/Dockerfile
+    container_name: demografia-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=demografia-db;Database=SaludTechDemografiaDb;Username=postgres;Password=postgres
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    depends_on:
+      demografia-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5001:80"
+    restart: on-failure
+
+  consulta-service:
+    build:
+      context: .
+      dockerfile: Distribucion/Consulta.Aplicacion/Dockerfile
+    container_name: consulta-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+      - ServiciosFiltro__Demografia=http://demografia-service/api/demografia/buscar
+      - ServiciosFiltro__Modalidad=http://modalidad-service/api/modalidad/buscar
+      - DataWarehouse__Host=http://ingestion-service/api/imagenes/ids
+    depends_on:
+      broker:
+        condition: service_started
+      demografia-service:
+        condition: service_started
+      modalidad-service:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5000:80"
+    restart: on-failure
+
+  ingestion-service:
+    build:
+      context: .
+      dockerfile: Ingestion/Ingestion.Aplicacion/Dockerfile
+    container_name: ingestion-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=ingestion-db;Database=SaludTechIngestionDb;Username=postgres;Password=postgres
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    depends_on:
+      ingestion-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5003:80"
+    restart: on-failure
+
   # Start zookeeper
   zookeeper:
     image: apachepulsar/pulsar:latest
@@ -83,8 +201,6 @@ services:
       - clusterName=cluster-a
       - zkServers=zookeeper:2181
       - metadataServiceUri=metadata-store:zk:zookeeper:2181
-      # otherwise every time we run docker compose uo or down we fail to start due to Cookie
-      # See: https://github.com/apache/bookkeeper/blob/405e72acf42bb1104296447ea8840d805094c787/bookkeeper-server/src/main/java/org/apache/bookkeeper/bookie/Cookie.java#L57-68
       - advertisedAddress=bookie
       - BOOKIE_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
     depends_on:
@@ -92,7 +208,6 @@ services:
         condition: service_healthy
       pulsar-init:
         condition: service_completed_successfully
-    # Map the local directory to the container to avoid bookie startup failure due to insufficient container disks.
     volumes:
       - ./data/bookkeeper:/pulsar/data/bookkeeper
     command: bash -c "bin/apply-config-from-env.py conf/bookkeeper.conf && exec bin/pulsar bookie"
@@ -113,7 +228,7 @@ services:
       - managedLedgerDefaultWriteQuorum=1
       - managedLedgerDefaultAckQuorum=1
       - advertisedAddress=broker
-      - advertisedListeners=external:pulsar://127.0.0.1:6650
+      - advertisedListeners=internal:pulsar://broker:6650
       - PULSAR_MEM=-Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
     depends_on:
       zookeeper:

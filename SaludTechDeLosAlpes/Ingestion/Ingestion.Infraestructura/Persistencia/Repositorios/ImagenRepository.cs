@@ -170,7 +170,30 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
             }
         }
         
-        var imagenes = await query
+        var idsImagenes = await query
+            .Select(i => i.Id)
+            .ToListAsync(cancellationToken);
+        
+        // now get the full object
+        var imagenes = await context.Imagenes
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.Modalidad)
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.RegionAnatomica)
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.Patologia)
+            .Include(i => i.AtributosImagen)
+            .Include(i => i.ContextoProcesal)
+            .Include(i => i.Metadatos)
+            .ThenInclude(m => m.EntornoClinico)
+            .Include(i => i.Metadatos)
+            .ThenInclude(m => m.Sintomas)
+            .Include(i => i.Paciente)
+            .ThenInclude(p => p.Demografia)
+            .Include(i => i.Paciente)
+            .ThenInclude(p => p.Historial)
+            .Include(i => i.EntornoClinico)
+            .Where(i => idsImagenes.Contains(i.Id))
             .ToListAsync(cancellationToken);
         
         return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);

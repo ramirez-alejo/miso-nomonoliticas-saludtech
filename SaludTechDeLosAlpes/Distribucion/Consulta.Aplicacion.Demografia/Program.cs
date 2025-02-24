@@ -10,6 +10,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on all interfaces
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
+
 // Configure database
 var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:DefaultConnection") 
     ?? builder.Configuration.GetConnectionString("DefaultConnection") 

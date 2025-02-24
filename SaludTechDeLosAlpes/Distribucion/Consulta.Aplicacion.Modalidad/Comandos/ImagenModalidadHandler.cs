@@ -30,6 +30,7 @@ public class ImagenModalidadHandler
             }
             
             _logger.LogInformation("Procesando Modalidad de Imagen para ImagenId: {ImagenId}", evento?.ImagenId);
+            _logger.LogInformation("Detalle del evento: {@Evento}", evento);
 
             var imagen = MapeoModalidaImagen.MapFromEvent(evento);
 

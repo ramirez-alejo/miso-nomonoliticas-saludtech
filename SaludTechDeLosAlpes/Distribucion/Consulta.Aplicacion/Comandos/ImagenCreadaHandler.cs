@@ -40,6 +40,7 @@ public class ImagenCreadaHandler
             };
             await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA, demografiaEvent);
             _logger.LogInformation("Evento deDemografia publicado para la Imagen con Id {ImagenId}", imagen.Id);
+            _logger.LogInformation("Detalle del evento: {@Evento}", imagen);
 
             // Create and publish modalidad event
             var modalidadEvent = new ImagenModalidadEvent

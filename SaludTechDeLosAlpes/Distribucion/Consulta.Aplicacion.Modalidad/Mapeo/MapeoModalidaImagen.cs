@@ -6,9 +6,9 @@ namespace Consulta.Aplicacion.Modalidad.Mapeo;
 
 public static class MapeoModalidaImagen
 {
-	public static ImagenModalidad MapToDto(ImagenModalidadEntity entity)
+	public static ImagenTipoImagen MapToDto(ImagenModalidadEntity entity)
 	{
-		return new ImagenModalidad
+		return new ImagenTipoImagen
 		{
 			ImagenId = entity.ImagenId,
 			Modalidad = new Dominio.Modalidad
@@ -24,7 +24,7 @@ public static class MapeoModalidaImagen
 		};
 	}
 	
-	public static ImagenModalidadEntity MapToEntity(ImagenModalidad dto)
+	public static ImagenModalidadEntity MapToEntity(ImagenTipoImagen dto)
 	{
 		return new ImagenModalidadEntity
 		{
@@ -36,9 +36,9 @@ public static class MapeoModalidaImagen
 		};
 	}
 	
-	public static ImagenModalidad MapFromEvent(ImagenModalidadEvent evento)
+	public static ImagenTipoImagen MapFromEvent(ImagenModalidadEvent evento)
 	{
-		return new ImagenModalidad
+		return new ImagenTipoImagen
 		{
 			ImagenId = evento.ImagenId,
 			Modalidad = new Dominio.Modalidad

@@ -5,7 +5,7 @@ using Mediator;
 
 namespace Consulta.Aplicacion.Modalidad.Consultas;
 
-public class ImagenModalidadConsulta : ImagenModalidad, IRequest<ImagenModalidadResponse>
+public class ImagenTipoImagenConsulta : ImagenTipoImagen, IRequest<ImagenModalidadResponse>
 {
 }
 
@@ -14,7 +14,7 @@ public class ImagenModalidadResponse
     public IEnumerable<Guid> ImagenId { get; set; }
 }
 
-public class ImagenModalidadConsultaHandler : IRequestHandler<ImagenModalidadConsulta, ImagenModalidadResponse>
+public class ImagenModalidadConsultaHandler : IRequestHandler<ImagenTipoImagenConsulta, ImagenModalidadResponse>
 {
     private readonly IImagenModalidadRepository _repository;
     private readonly ILogger<ImagenModalidadConsultaHandler> _logger;
@@ -27,7 +27,7 @@ public class ImagenModalidadConsultaHandler : IRequestHandler<ImagenModalidadCon
         _logger = logger;
     }
 
-    public async ValueTask<ImagenModalidadResponse> Handle(ImagenModalidadConsulta request, CancellationToken cancellationToken)
+    public async ValueTask<ImagenModalidadResponse> Handle(ImagenTipoImagenConsulta request, CancellationToken cancellationToken)
     {
         var result = await _repository.GetByCriteriaAsync(request.Modalidad?.Nombre, request.Modalidad?.Descripcion,
             request.RegionAnatomica?.Nombre, request.RegionAnatomica?.Descripcion, cancellationToken);

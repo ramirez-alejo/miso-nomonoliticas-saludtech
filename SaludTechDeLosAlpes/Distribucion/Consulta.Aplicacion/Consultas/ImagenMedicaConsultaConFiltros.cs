@@ -8,14 +8,18 @@ namespace Consulta.Aplicacion.Consultas;
 
 public class ImagenMedicaConsultaConFiltros : IRequest<ImagenMedicaResponse>
 {
-	public Guid[] Ids { get; set; }
 	public ImagenDemografia Demografia { get; set; }
-	public ImagenModalidad Modalidad { get; set; }
+	public ImagenTipoImagen TipoImagen { get; set; }
 }
 
 public class ImagenMedicaResponse
 {
 	public ImagenMedica[] Imagenes { get; set; }
+}
+
+public class ImagenIdsDto
+{
+	public Guid[] imagenIds { get; set; }
 }
 
 public class ImagenMedicaConsultaConFiltrosHandler(HttpClient httpClient, IConfiguration configuration) : IRequestHandler<ImagenMedicaConsultaConFiltros, ImagenMedicaResponse>
@@ -24,15 +28,20 @@ public class ImagenMedicaConsultaConFiltrosHandler(HttpClient httpClient, IConfi
 	public async ValueTask<ImagenMedicaResponse> Handle(ImagenMedicaConsultaConFiltros request, CancellationToken cancellationToken)
 	{
 		
-		var taskModalidad = httpClient.PostAsJsonAsync(configuration["ServiciosFiltro:Modalidad"], request.Modalidad, cancellationToken: cancellationToken);
+		var taskModalidad = httpClient.PostAsJsonAsync(configuration["ServiciosFiltro:Modalidad"], request.TipoImagen, cancellationToken: cancellationToken);
 		var taskDemografia = httpClient.PostAsJsonAsync(configuration["ServiciosFiltro:Demografia"], request.Demografia, cancellationToken: cancellationToken);
 
 		var result = await Task.WhenAll(taskModalidad, taskDemografia);
 		
-		var resultModalidad = await result[0].Content.ReadFromJsonAsync<IEnumerable<Guid>>(cancellationToken: cancellationToken);
-		var resultDemografia = await result[1].Content.ReadFromJsonAsync<IEnumerable<Guid>>(cancellationToken: cancellationToken);
+		var resultModalidad = await result[0].Content.ReadFromJsonAsync<ImagenIdsDto>(cancellationToken: cancellationToken);
+		var resultDemografia = await result[1].Content.ReadFromJsonAsync<ImagenIdsDto>(cancellationToken: cancellationToken);
 		
-		var resultIds = resultModalidad.Intersect(resultDemografia).ToArray();
+		var resultIds = resultModalidad?.imagenIds?.Intersect(resultDemografia?.imagenIds ?? [] )?.ToArray() ?? [];
+		
+		if (resultIds.Length == 0)
+		{
+			return new ImagenMedicaResponse { Imagenes = [] };
+		}
 		
 		// create an object with a property Ids and the list fo ids
 		var finalRequest = new { Ids = resultIds };

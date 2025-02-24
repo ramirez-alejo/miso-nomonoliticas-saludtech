@@ -1,6 +1,6 @@
 namespace Consulta.Dominio;
 
-public class ImagenModalidad
+public class ImagenTipoImagen
 {
 	public Guid ImagenId { get; set; }
 	public Modalidad Modalidad { get; set; }

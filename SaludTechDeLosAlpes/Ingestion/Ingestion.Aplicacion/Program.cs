@@ -15,6 +15,12 @@ public class Program
 	{
 		var builder = WebApplication.CreateBuilder(args);
 		
+		// Configure Kestrel to listen on all interfaces
+		builder.WebHost.ConfigureKestrel(options =>
+		{
+			options.ListenAnyIP(80);
+		});
+		
 		var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:DefaultConnection")
 							   ?? builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -89,6 +95,12 @@ public class Program
 		{
 			var response = await mediator.Send(command);
 			return Results.Created($"/api/imagenes/{response.Id}", response);
+		});
+		
+		app.MapPost("/api/imagenes/ids", async (ImagenMedicaConsulta consulta, IMediator mediator) =>
+		{
+			var response = await mediator.Send(consulta);
+			return response is null ? Results.NotFound() : Results.Ok(response);
 		});
 		
 		app.MapPost("/api/imagenes/buscar", async (ImagenMedicaConsulta consulta, IMediator mediator) =>

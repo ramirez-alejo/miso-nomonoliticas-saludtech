@@ -14,7 +14,7 @@ public class ImagenModalidadRepository : IImagenModalidadRepository
 		_context = context;
 	}
 
-	public async Task<ImagenModalidad[]> GetByCriteriaAsync(string nombre, string descripcion, string regionAnatomica,
+	public async Task<ImagenTipoImagen[]> GetByCriteriaAsync(string nombre, string descripcion, string regionAnatomica,
 		string regionDescripcion, CancellationToken cancellationToken)
 	{
 		var queryBuilder = _context.ImagenesModalidad.AsQueryable();
@@ -43,14 +43,14 @@ public class ImagenModalidadRepository : IImagenModalidadRepository
 	}
 
 
-	public async Task<ImagenModalidad> GetByImagenIdAsync(Guid imagenId, CancellationToken cancellationToken)
+	public async Task<ImagenTipoImagen> GetByImagenIdAsync(Guid imagenId, CancellationToken cancellationToken)
 	{
 		var result = await _context.ImagenesModalidad
 			.FirstOrDefaultAsync(x => x.ImagenId == imagenId, cancellationToken: cancellationToken);
 		return MapeoModalidaImagen.MapToDto(result);
 	}
 
-	public async Task<ImagenModalidad> UpsertAsync(ImagenModalidad modailidad,
+	public async Task<ImagenTipoImagen> UpsertAsync(ImagenTipoImagen modailidad,
 		CancellationToken cancellationToken)
 	{
 		var existing = await _context.ImagenesModalidad

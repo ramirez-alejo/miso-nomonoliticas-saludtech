@@ -1,13 +1,20 @@
 using Consulta.Aplicacion.Comandos;
+using Consulta.Aplicacion.Consultas;
 using Core.Infraestructura.MessageBroker;
 using Consulta.Aplicacion.Workers;
+using Core.Infraestructura;
+using Mediator;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on all interfaces
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
+
 // Add services to the container.
-builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
 
 // Configure message broker
 var brokerHost = Environment.GetEnvironmentVariable("MessageBroker:Host") 
@@ -24,6 +31,9 @@ builder.Services.Configure<MessageBrokerSettings>(settings => {
     settings.Port = brokerPort;
 });
 builder.Services.AddSingleton<MessageBrokerSettings>();
+builder.Services.AddHttpClient();
+builder.Services.AddMediator(options =>
+    options.ServiceLifetime = ServiceLifetime.Scoped);
 
 // Register message broker services
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
@@ -33,17 +43,35 @@ builder.Services.AddScoped<ImagenCreadaHandler>();
 // Register background worker
 builder.Services.AddHostedService<ImagenSubscriptionWorker>();
 
+// Configure Swagger/OpenAPI
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddOpenApiDocument(config =>
+{
+    config.DocumentName = "SaludTechAPI-Consultas";
+    config.Title = "SaludTechAPI-Consultas v1";
+    config.Version = "v1";
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.UseCustomExceptionHandler();
+app.UseOpenApi();
+app.UseSwaggerUi(config =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+    config.DocumentTitle = "SaludTechAPI-Consultas";
+    config.Path = "/swagger";
+    config.DocumentPath = "/swagger/{documentName}/swagger.json";
+    config.DocExpansion = "list";
+    config.PersistAuthorization = true;
+});
 
-app.UseHttpsRedirection();
-app.UseAuthorization();
-app.MapControllers();
+app.MapGet("/health", () => Results.Ok());
+app.MapGet("/version", () => Results.Ok("1.0.0"));
+app.MapPost("/api/consultas/imagen", async (IMediator mediator, ImagenMedicaConsultaConFiltros command) =>
+{
+    await mediator.Send(command);
+    return Results.Accepted();
+});
+
 
 app.Run();

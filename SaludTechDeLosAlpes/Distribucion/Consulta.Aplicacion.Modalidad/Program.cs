@@ -10,6 +10,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Configure Kestrel to listen on all interfaces
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.ListenAnyIP(80);
+});
+
 // Configure database
 var connectionString = Environment.GetEnvironmentVariable("CONNECTION_STRING:DefaultConnection") 
     ?? builder.Configuration.GetConnectionString("DefaultConnection") 
@@ -85,7 +91,7 @@ app.MapGet("/health", () => Results.Ok());
 app.MapGet("/version", () => Results.Ok("1.0.0"));
 
 // API endpoints
-app.MapPost("/api/modalidad/buscar", async (IMediator mediator, ImagenModalidadConsulta query) =>
+app.MapPost("/api/modalidad/buscar", async (IMediator mediator, ImagenTipoImagenConsulta query) =>
 {
     var result = await mediator.Send(query);
     return Results.Ok(result);

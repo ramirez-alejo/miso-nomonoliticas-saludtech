@@ -1,5 +1,6 @@
 using Core.Dominio;
 using Core.Infraestructura.MessageBroker;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Consulta.Aplicacion.Comandos;
@@ -12,6 +13,8 @@ public class ImagenSubscriptionWorker : BackgroundService
     private readonly IServiceProvider _serviceProvider;
     private const string TOPIC_IMAGEN_MEDICA = "imagen-medica";
     private const string SUBSCRIPTION_NAME = "consulta-service";
+    private IMessageConsumer? _messageConsumer;
+    private AsyncServiceScope? _scope;
 
     public ImagenSubscriptionWorker(
         ILogger<ImagenSubscriptionWorker> logger,
@@ -23,36 +26,65 @@ public class ImagenSubscriptionWorker : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using (var scope = _serviceProvider.CreateScope())
+        try
         {
-            var messageConsumer = scope.ServiceProvider.GetRequiredService<IMessageConsumer>();
-            var imagenHandler = scope.ServiceProvider.GetRequiredService<ImagenCreadaHandler>();
-            try
+            _scope = _serviceProvider.CreateAsyncScope();
+            _messageConsumer = _scope.Value.ServiceProvider.GetRequiredService<IMessageConsumer>();
+            var imagenHandler = _scope.Value.ServiceProvider.GetRequiredService<ImagenCreadaHandler>();
+            
+            _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
+                TOPIC_IMAGEN_MEDICA, SUBSCRIPTION_NAME);
+
+            await _messageConsumer.StartAsync<Imagen>(
+                TOPIC_IMAGEN_MEDICA,
+                SUBSCRIPTION_NAME,
+                async imagen => await imagenHandler.HandleImagenCreada(imagen)
+            );
+
+            // Keep the worker running
+            while (!stoppingToken.IsCancellationRequested)
             {
-                _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
-                    TOPIC_IMAGEN_MEDICA, SUBSCRIPTION_NAME);
+                await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error in subscription worker");
+            throw;
+        }
+    }
 
-                await messageConsumer.StartAsync<Imagen>(
-                    TOPIC_IMAGEN_MEDICA,
-                    SUBSCRIPTION_NAME,
-                    async imagen => await imagenHandler.HandleImagenCreada(imagen)
-                );
+    public override async Task StopAsync(CancellationToken stoppingToken)
+    {
+        
 
-                // Keep the worker running
-                while (!stoppingToken.IsCancellationRequested)
+        try
+        {
+            await base.StopAsync(stoppingToken);
+            if (_messageConsumer != null)
+            {
+                try 
                 {
-                    await Task.Delay(TimeSpan.FromSeconds(30), stoppingToken);
+                    await _messageConsumer.StopAsync();
+                    if (_messageConsumer is IAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error stopping message consumer");
                 }
             }
-            catch (Exception ex)
+
+            if (_scope.HasValue)
             {
-                _logger.LogError(ex, "Error in subscription worker");
-                throw;
+                await _scope.Value.DisposeAsync();
             }
-            finally
-            {
-                await messageConsumer.StopAsync();
-            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during worker shutdown");
         }
     }
 }

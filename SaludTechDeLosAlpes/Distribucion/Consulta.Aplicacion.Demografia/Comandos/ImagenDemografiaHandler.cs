@@ -29,6 +29,7 @@ public class ImagenDemografiaHandler
             }
             
             _logger.LogInformation("Procesando Demografia de Imagen para ImagenId: {ImagenId}", evento?.ImagenId);
+            _logger.LogInformation("Detalle del evento: {@Evento}", evento);
 
             var imagen = MapeoDemografiaImagen.MapFromEvent(evento);
 
