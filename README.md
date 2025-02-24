@@ -13,7 +13,7 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
 
 * [Arquitectura (Entrega 1)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-1)
 * [Arquitectura (Entrega 2)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-2)
-* [Entrega 3](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3)
+* [Escenarios de Calidad (Entrega 3)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3)
 
 ## Experimentación
 
@@ -26,12 +26,12 @@ En nuestro experimento implementamos una prueba de concepto para el escenario de
    - Publica eventos en el broker de mensajería
    - Almacena información en Postgres (simulando un data lake)
 
-2. **Manejador de Eventos**
+2. **Manejador de Eventos - Consultas**
    - Parte del subdominio de consultas
    - Procesa eventos de dominio
    - Genera comandos para los manejadores de filtros
 
-3. **Manejadores de Filtros**
+3. **Manejadores de Filtros - Consultas**
    - Implementados: Demografía y Modalidad
    - Reciben comandos para almacenamiento de entidades
    - Bases de datos independientes (Postgres)
