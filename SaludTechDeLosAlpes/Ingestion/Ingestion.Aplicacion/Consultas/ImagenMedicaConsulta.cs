@@ -26,16 +26,10 @@ public class ImagenMedicaConsultaHandler(IImagenRepository imagenRepository, ILo
 			logger.Log(LogLevel.Information, "Imagenes medicas consultadas por ids");
 			return new ImagenMedicaResponse { Imagenes = result };
 		}
-		if (request.Demografia != null)
+		if (request.Demografia != null || request.Modalidad != null)
 		{
-			var result = await imagenRepository.GetByDemografiaAsync(request.Demografia.GrupoEdad, request.Demografia.Sexo, request.Demografia.Etnicidad, cancellationToken);
-			logger.Log(LogLevel.Information, "Imagenes medicas consultadas por demografia");
-			return new ImagenMedicaResponse { Imagenes = result.ToArray() };
-		}
-		if (request.Modalidad != null)
-		{
-			var result = await imagenRepository.GetByModalidadAsync(request.Modalidad.Nombre, cancellationToken);
-			logger.Log(LogLevel.Information, "Imagenes medicas consultadas por modalidad");
+			var result = await imagenRepository.GetByModalidadAndDemografiaAsync(request.Modalidad, request.Demografia, cancellationToken);
+			logger.Log(LogLevel.Information, "Imagenes medicas consultadas por filtro");
 			return new ImagenMedicaResponse { Imagenes = result.ToArray() };
 		}
 		logger.Log(LogLevel.Information, "Imagenes medicas consultadas sin filtro");

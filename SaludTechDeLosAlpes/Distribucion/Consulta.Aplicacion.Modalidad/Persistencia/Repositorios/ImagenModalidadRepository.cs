@@ -1,6 +1,6 @@
-using Consulta.Aplicacion.Modalidad.Dtos;
 using Consulta.Aplicacion.Modalidad.Mapeo;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
+using Consulta.Dominio;
 using Microsoft.EntityFrameworkCore;
 
 namespace Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;
@@ -14,7 +14,7 @@ public class ImagenModalidadRepository : IImagenModalidadRepository
 		_context = context;
 	}
 
-	public async Task<ModalidadImagen[]> GetByCriteriaAsync(string nombre, string descripcion, string regionAnatomica,
+	public async Task<ImagenModalidad[]> GetByCriteriaAsync(string nombre, string descripcion, string regionAnatomica,
 		string regionDescripcion, CancellationToken cancellationToken)
 	{
 		var queryBuilder = _context.ImagenesModalidad.AsQueryable();
@@ -43,20 +43,20 @@ public class ImagenModalidadRepository : IImagenModalidadRepository
 	}
 
 
-	public async Task<ModalidadImagen> GetByImagenIdAsync(Guid imagenId, CancellationToken cancellationToken)
+	public async Task<ImagenModalidad> GetByImagenIdAsync(Guid imagenId, CancellationToken cancellationToken)
 	{
 		var result = await _context.ImagenesModalidad
 			.FirstOrDefaultAsync(x => x.ImagenId == imagenId, cancellationToken: cancellationToken);
 		return MapeoModalidaImagen.MapToDto(result);
 	}
 
-	public async Task<ModalidadImagen> UpsertAsync(ModalidadImagen modailidadImagen,
+	public async Task<ImagenModalidad> UpsertAsync(ImagenModalidad modailidad,
 		CancellationToken cancellationToken)
 	{
 		var existing = await _context.ImagenesModalidad
-			.FirstOrDefaultAsync(x => x.ImagenId == modailidadImagen.ImagenId, cancellationToken: cancellationToken);
+			.FirstOrDefaultAsync(x => x.ImagenId == modailidad.ImagenId, cancellationToken: cancellationToken);
 
-		var entity = MapeoModalidaImagen.MapToEntity(modailidadImagen);
+		var entity = MapeoModalidaImagen.MapToEntity(modailidad);
 		if (existing == null)
 		{
 			await _context.ImagenesModalidad.AddAsync(entity, cancellationToken);

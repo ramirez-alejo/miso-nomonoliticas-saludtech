@@ -1,4 +1,4 @@
-namespace Consulta.Aplicacion.Demografia.Dtos;
+namespace Consulta.Dominio;
 
 public class ImagenDemografia
 {

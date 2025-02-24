@@ -1,6 +1,6 @@
-using Consulta.Aplicacion.Demografia.Dtos;
 using Consulta.Aplicacion.Demografia.Mapeo;
 using Consulta.Aplicacion.Demografia.Persistencia.Entidades;
+using Consulta.Dominio;
 using Microsoft.EntityFrameworkCore;
 
 namespace Consulta.Aplicacion.Demografia.Persistencia.Repositorios;

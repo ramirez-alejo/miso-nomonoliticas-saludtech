@@ -1,4 +1,3 @@
-using Consulta.Aplicacion.Demografia.Dtos;
 using Consulta.Aplicacion.Demografia.Persistencia.Entidades;
 using Consulta.Aplicacion.Demografia.Persistencia.Repositorios;
 using Mediator;

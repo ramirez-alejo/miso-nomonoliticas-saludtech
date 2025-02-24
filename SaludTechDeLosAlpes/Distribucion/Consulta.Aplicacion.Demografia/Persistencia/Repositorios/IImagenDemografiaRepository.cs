@@ -1,5 +1,5 @@
-using Consulta.Aplicacion.Demografia.Dtos;
 using Consulta.Aplicacion.Demografia.Persistencia.Entidades;
+using Consulta.Dominio;
 
 namespace Consulta.Aplicacion.Demografia.Persistencia.Repositorios;
 

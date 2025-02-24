@@ -1,11 +1,11 @@
-using Consulta.Aplicacion.Modalidad.Dtos;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
 using Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;
+using Consulta.Dominio;
 using Mediator;
 
 namespace Consulta.Aplicacion.Modalidad.Consultas;
 
-public class ImagenModalidadConsulta : ModalidadImagen, IRequest<ImagenModalidadResponse>
+public class ImagenModalidadConsulta : ImagenModalidad, IRequest<ImagenModalidadResponse>
 {
 }
 

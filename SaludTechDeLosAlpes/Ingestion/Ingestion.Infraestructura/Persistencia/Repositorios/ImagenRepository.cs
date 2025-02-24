@@ -115,36 +115,6 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
         }
     }
 
-    public async Task<IEnumerable<Imagen>> GetByDemografiaAsync(string grupoEdad, string sexo, string etnicidad, CancellationToken cancellationToken)
-    {
-        var imagenes = await context.Imagenes
-            .Include(i => i.TipoImagen)
-                .ThenInclude(t => t.Modalidad)
-            .Include(i => i.TipoImagen)
-                .ThenInclude(t => t.RegionAnatomica)
-            .Where(i => i.Paciente.Demografia.GrupoEdad == grupoEdad &&
-                        i.Paciente.Demografia.Sexo == sexo &&
-                        i.Paciente.Demografia.Etnicidad == etnicidad)
-            .Take(1000)
-            .ToListAsync(cancellationToken: cancellationToken);
-        
-        return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);
-    }
-
-    public async Task<IEnumerable<Imagen>> GetByModalidadAsync(string modalidad, CancellationToken cancellationToken)
-    {
-        var imagenes = await context.Imagenes
-            .Include(i => i.TipoImagen)
-                .ThenInclude(t => t.Modalidad)
-            .Include(i => i.TipoImagen)
-                .ThenInclude(t => t.RegionAnatomica)
-            .Where(i => i.TipoImagen.Modalidad.Nombre == modalidad)
-            .Take(1000)
-            .ToListAsync(cancellationToken: cancellationToken);
-        
-        return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);
-    }
-
     public async Task<IEnumerable<Imagen>> GetByRegionAnatomicaAsync(string regionAnatomica, CancellationToken cancellationToken)
     {
         var imagenes = await context.Imagenes
@@ -157,5 +127,52 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
         
         return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);
         
+    }
+
+    public async Task<IEnumerable<Imagen>> GetByModalidadAndDemografiaAsync(Modalidad modalidad, Demografia demografia,
+        CancellationToken cancellationToken)
+    {
+        var query = context.Imagenes
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.Modalidad)
+            .Include(i => i.Paciente)
+            .ThenInclude(p => p.Demografia)
+            .AsQueryable();
+
+        if (modalidad != null)
+        {
+            if (!string.IsNullOrEmpty(modalidad.Nombre))
+            {
+                query = query.Where(i => i.TipoImagen.Modalidad.Nombre == modalidad.Nombre);
+            }
+            
+            if (!string.IsNullOrEmpty(modalidad.Descripcion))
+            {
+                query = query.Where(i => i.TipoImagen.Modalidad.Descripcion == modalidad.Descripcion);
+            }
+        }
+        
+        if (demografia != null)
+        {
+            if (!string.IsNullOrEmpty(demografia.GrupoEdad))
+            {
+                query = query.Where(i => i.Paciente.Demografia.GrupoEdad == demografia.GrupoEdad);
+            }
+            
+            if (!string.IsNullOrEmpty(demografia.Sexo))
+            {
+                query = query.Where(i => i.Paciente.Demografia.Sexo == demografia.Sexo);
+            }
+            
+            if (!string.IsNullOrEmpty(demografia.Etnicidad))
+            {
+                query = query.Where(i => i.Paciente.Demografia.Etnicidad == demografia.Etnicidad);
+            }
+        }
+        
+        var imagenes = await query
+            .ToListAsync(cancellationToken);
+        
+        return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);
     }
 }

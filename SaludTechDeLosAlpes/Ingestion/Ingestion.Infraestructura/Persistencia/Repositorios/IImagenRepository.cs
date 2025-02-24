@@ -10,8 +10,7 @@ public interface IImagenRepository
     Task UpdateAsync(Imagen imagen, CancellationToken cancellationToken);
     Task DeleteAsync(Guid id, CancellationToken cancellationToken);
 
-    Task<IEnumerable<Imagen>> GetByDemografiaAsync(string grupoEdad, string sexo, string etnicidad,
+    Task<IEnumerable<Imagen>> GetByModalidadAndDemografiaAsync(Modalidad modalidad, Demografia demografia,
         CancellationToken cancellationToken);
-    Task<IEnumerable<Imagen>> GetByModalidadAsync(string modalidad, CancellationToken cancellationToken);
     Task<IEnumerable<Imagen>> GetByRegionAnatomicaAsync(string regionAnatomica, CancellationToken cancellationToken);
 }

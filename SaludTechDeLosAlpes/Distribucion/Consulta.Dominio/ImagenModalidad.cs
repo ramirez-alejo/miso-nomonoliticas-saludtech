@@ -1,6 +1,6 @@
-namespace Consulta.Aplicacion.Modalidad.Dtos;
+namespace Consulta.Dominio;
 
-public class ModalidadImagen
+public class ImagenModalidad
 {
 	public Guid ImagenId { get; set; }
 	public Modalidad Modalidad { get; set; }

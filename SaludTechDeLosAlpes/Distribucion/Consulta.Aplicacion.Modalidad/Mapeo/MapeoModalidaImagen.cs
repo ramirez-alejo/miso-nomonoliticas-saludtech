@@ -1,17 +1,17 @@
-using Consulta.Aplicacion.Modalidad.Dtos;
 using Consulta.Aplicacion.Modalidad.Persistencia.Entidades;
+using Consulta.Dominio;
 using Consulta.Dominio.Eventos;
 
 namespace Consulta.Aplicacion.Modalidad.Mapeo;
 
 public static class MapeoModalidaImagen
 {
-	public static ModalidadImagen MapToDto(ImagenModalidadEntity entity)
+	public static ImagenModalidad MapToDto(ImagenModalidadEntity entity)
 	{
-		return new ModalidadImagen
+		return new ImagenModalidad
 		{
 			ImagenId = entity.ImagenId,
-			Modalidad = new Dtos.Modalidad
+			Modalidad = new Dominio.Modalidad
 			{
 				Nombre = entity.Nombre,
 				Descripcion = entity.Descripcion
@@ -24,7 +24,7 @@ public static class MapeoModalidaImagen
 		};
 	}
 	
-	public static ImagenModalidadEntity MapToEntity(ModalidadImagen dto)
+	public static ImagenModalidadEntity MapToEntity(ImagenModalidad dto)
 	{
 		return new ImagenModalidadEntity
 		{
@@ -36,12 +36,12 @@ public static class MapeoModalidaImagen
 		};
 	}
 	
-	public static ModalidadImagen MapFromEvent(ImagenModalidadEvent evento)
+	public static ImagenModalidad MapFromEvent(ImagenModalidadEvent evento)
 	{
-		return new ModalidadImagen
+		return new ImagenModalidad
 		{
 			ImagenId = evento.ImagenId,
-			Modalidad = new Dtos.Modalidad
+			Modalidad = new Dominio.Modalidad
 			{
 				Nombre = evento.Nombre,
 				Descripcion = evento.Descripcion
