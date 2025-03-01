@@ -19,6 +19,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\Ingestion.Dominio\Ingestion.Dominio.csproj" />
+      <ProjectReference Include="..\Ingestion.Infraestructura\Ingestion.Infraestructura.csproj" />
     </ItemGroup>
 
 </Project>

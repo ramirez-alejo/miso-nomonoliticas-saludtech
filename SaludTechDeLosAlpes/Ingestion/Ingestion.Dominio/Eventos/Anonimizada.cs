@@ -1,4 +1,3 @@
-using Consulta.Aplicacion.Dtos;
 
 namespace Ingestion.Dominio.Eventos;
 

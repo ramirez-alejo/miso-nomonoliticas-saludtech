@@ -23,4 +23,4 @@ RUN dotnet publish "Ingestion.Aplicacion.Anonimizacion.csproj" -c $BUILD_CONFIGU
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Consulta.Aplicacion.Anonimizacion.dll"]
+ENTRYPOINT ["dotnet", "Ingestion.Aplicacion.Anonimizacion.dll"]

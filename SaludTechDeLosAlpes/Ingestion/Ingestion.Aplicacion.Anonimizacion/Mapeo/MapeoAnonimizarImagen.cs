@@ -1,5 +1,4 @@
-using Consulta.Dominio;
-using Consulta.Dominio.Eventos;
+using Core.Dominio;
 using Ingestion.Aplicacion.Anonimizacion.Persistencia.Entidades;
 using Ingestion.Dominio.Comandos;
 
@@ -29,8 +28,26 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
             return new Modelos.Anonimizar
             {
                 ImagenId = dto.ImagenId,
-                TipoImagen = dto.TipoImagen,
-                AtributosImagen = dto.AtributosImagen,
+                TipoImagen = new TipoImagen
+                {
+                    Modalidad = new Modalidad
+                    {
+                        Nombre = dto.TipoImagen?.Modalidad?.Nombre,
+                        Descripcion = dto.TipoImagen?.Modalidad?.Descripcion,
+                    },
+                    RegionAnatomica = new RegionAnatomica
+                    {
+                        Nombre = dto.TipoImagen?.RegionAnatomica?.Nombre,
+                        Descripcion = dto.TipoImagen?.RegionAnatomica?.Descripcion,
+                    },
+                },
+                AtributosImagen = new AtributosImagen
+                {
+                    Resolucion = dto.Resolucion,
+                    Contraste = dto.Contraste,
+                    Es3D = dto.Es3D,
+                    FaseEscaner = dto.FaseEscaner,
+                },
                 UbicacionImagen = dto.UbicacionImagen,
             };
         }

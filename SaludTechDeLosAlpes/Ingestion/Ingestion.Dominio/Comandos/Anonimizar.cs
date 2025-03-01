@@ -1,4 +1,5 @@
-using Consulta.Aplicacion.Dtos;
+
+using Core.Dominio;
 
 namespace Ingestion.Dominio.Comandos;
 
