@@ -169,26 +169,26 @@ services:
       timeout: 5s
       retries: 5
 
-#  anonimizacion-service:
-#    build:
-#      context: .
-#      dockerfile: Ingestion/Ingestion.Aplicacion.Anonimizacion/Dockerfile
-#    container_name: anonimizacion-service
-#    environment:
-#      - ASPNETCORE_ENVIRONMENT=Development
-#      - ConnectionStrings__DefaultConnection=Host=anonimizacion-db;Database=SaludTechAnonimizacionDb;Username=postgres;Password=postgres
-#      - MessageBroker__Host=broker
-#      - MessageBroker__Port=6650
-#    depends_on:
-#      anonimizacion-db:
-#        condition: service_healthy
-#      broker:
-#        condition: service_started
-#    networks:
-#      - pulsar
-#    ports:
-#      - "5004:80"
-#    restart: on-failure
+  anonimizacion-service:
+    build:
+      context: .
+      dockerfile: Ingestion/Ingestion.Aplicacion.Anonimizacion/Dockerfile
+    container_name: anonimizacion-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=anonimizacion-db;Database=SaludTechAnonimizacionDb;Username=postgres;Password=postgres
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    depends_on:
+      anonimizacion-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5004:80"
+    restart: on-failure
 
   metadata-db:
     image: postgres:latest
