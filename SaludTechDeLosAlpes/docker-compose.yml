@@ -190,6 +190,46 @@ services:
 #      - "5004:80"
 #    restart: on-failure
 
+  metadata-db:
+    image: postgres:latest
+    container_name: metadata-db
+    environment:
+      - POSTGRES_DB=SaludTechMetadataDb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5437:5432"
+    networks:
+      - pulsar
+    volumes:
+      - ./data/metadata-db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  metadata-service:
+    build:
+      context: .
+      dockerfile: Ingestion/Ingestion.Aplicacion.Metadata/Dockerfile
+    container_name: metadata-service
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=metadata-db;Database=SaludTechMetadataDb;Username=postgres;Password=postgres
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    depends_on:
+      metadata-db:
+        condition: service_healthy
+      broker:
+        condition: service_started
+    networks:
+      - pulsar
+    ports:
+      - "5005:80"
+    restart: on-failure
+
   # Start zookeeper
   zookeeper:
     image: apachepulsar/pulsar:latest
