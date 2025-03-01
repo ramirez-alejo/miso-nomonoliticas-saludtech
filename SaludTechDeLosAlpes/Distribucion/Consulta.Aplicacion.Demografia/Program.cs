@@ -52,7 +52,10 @@ builder.Services.AddScoped<IImagenDemografiaRepository, ImagenDemografiaReposito
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<ImagenDemografiaHandler>();
+
+// Register background workers
 builder.Services.AddHostedService<ImagenDemograficaSubscriptionWorker>();
+builder.Services.AddHostedService<ImagenConsultaDemografiaRequestWorker>();
 
 // Add mediator
 builder.Services.AddMediator(options =>

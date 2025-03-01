@@ -52,7 +52,10 @@ builder.Services.AddScoped<IImagenModalidadRepository, ImagenModalidadRepository
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<ImagenModalidadHandler>();
+
+// Register background workers
 builder.Services.AddHostedService<ImagenModalidadSubscriptionWorker>();
+builder.Services.AddHostedService<ImagenConsultaModalidadRequestWorker>();
 
 // Add mediator
 builder.Services.AddMediator(options =>

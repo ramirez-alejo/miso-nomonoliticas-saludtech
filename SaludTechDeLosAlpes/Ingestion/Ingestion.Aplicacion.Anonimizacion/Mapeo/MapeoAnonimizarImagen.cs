@@ -16,10 +16,10 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
                 NombreModalidad = model.TipoImagen.Modalidad.Nombre,
                 RegionAnatomica = model.TipoImagen.RegionAnatomica.Nombre,
                 DescripcionRegionAnatomica = model.TipoImagen.RegionAnatomica.Descripcion,
-                Resolucion = model.Resolucion,
-                Contraste = model.Contraste,
-                Es3D = model.Es3D,
-                FaseEscaner = model.FaseEscaner,
+                Resolucion = model.AtributosImagen?.Resolucion,
+                Contraste = model.AtributosImagen?.Contraste,
+                Es3D = model.AtributosImagen?.Es3D ?? false,
+                FaseEscaner = model.AtributosImagen?.FaseEscaner,
                 UbicacionImagen = model.UbicacionImagen,
             };
         }
@@ -31,10 +31,6 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
                 ImagenId = dto.ImagenId,
                 TipoImagen = dto.TipoImagen,
                 AtributosImagen = dto.AtributosImagen,
-                Resolucion = dto.Resolucion,
-                Contraste = dto.Contraste,
-                Es3D = dto.Es3D,
-                FaseEscaner = dto.FaseEscaner,
                 UbicacionImagen = dto.UbicacionImagen,
             };
         }

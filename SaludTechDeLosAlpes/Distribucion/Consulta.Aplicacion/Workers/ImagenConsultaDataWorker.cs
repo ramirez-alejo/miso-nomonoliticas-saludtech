@@ -1,23 +1,23 @@
-using Core.Dominio;
+using Consulta.Aplicacion.Sagas;
+using Consulta.Aplicacion.Sagas.Events;
 using Core.Infraestructura.MessageBroker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Consulta.Aplicacion.Comandos;
 
 namespace Consulta.Aplicacion.Workers;
 
-public class ImagenSubscriptionWorker : BackgroundService
+public class ImagenConsultaDataWorker : BackgroundService
 {
-    private readonly ILogger<ImagenSubscriptionWorker> _logger;
+    private readonly ILogger<ImagenConsultaDataWorker> _logger;
     private readonly IServiceProvider _serviceProvider;
-    private const string TOPIC_IMAGEN_MEDICA = "imagen-medica";
-    private const string SUBSCRIPTION_NAME = "consulta-service";
+    private const string TOPIC_DATA_REQUEST = "imagen-consulta-data-request";
+    private const string SUBSCRIPTION_NAME = "data-request-handler";
     private IMessageConsumer? _messageConsumer;
     private AsyncServiceScope? _scope;
 
-    public ImagenSubscriptionWorker(
-        ILogger<ImagenSubscriptionWorker> logger,
+    public ImagenConsultaDataWorker(
+        ILogger<ImagenConsultaDataWorker> logger,
         IServiceProvider serviceProvider)
     {
         _logger = logger;
@@ -30,15 +30,19 @@ public class ImagenSubscriptionWorker : BackgroundService
         {
             _scope = _serviceProvider.CreateAsyncScope();
             _messageConsumer = _scope.Value.ServiceProvider.GetRequiredService<IMessageConsumer>();
-            var imagenHandler = _scope.Value.ServiceProvider.GetRequiredService<ImagenCreadaHandler>();
+            var orchestrator = _scope.Value.ServiceProvider.GetRequiredService<ImagenConsultaSagaOrchestrator>();
             
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
-                TOPIC_IMAGEN_MEDICA, SUBSCRIPTION_NAME);
+                TOPIC_DATA_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<Imagen>(
-                TOPIC_IMAGEN_MEDICA,
+            await _messageConsumer.StartAsync<ImagenConsultaDataRequestEvent>(
+                TOPIC_DATA_REQUEST,
                 SUBSCRIPTION_NAME,
-                imagenHandler.HandleImagenCreada
+                async request => 
+                {
+                    _logger.LogInformation("Received data warehouse request for saga {SagaId}", request.SagaId);
+                    await orchestrator.HandleDataRequestDirectly(request.SagaId, request.ImagenIds, stoppingToken);
+                }
             );
 
             // Keep the worker running
@@ -49,15 +53,13 @@ public class ImagenSubscriptionWorker : BackgroundService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in subscription worker");
+            _logger.LogError(ex, "Error in data warehouse request worker");
             throw;
         }
     }
 
     public override async Task StopAsync(CancellationToken stoppingToken)
     {
-        
-
         try
         {
             await base.StopAsync(stoppingToken);

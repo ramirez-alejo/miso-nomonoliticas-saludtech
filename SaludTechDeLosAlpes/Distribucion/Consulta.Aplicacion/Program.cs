@@ -1,5 +1,6 @@
 using Consulta.Aplicacion.Comandos;
 using Consulta.Aplicacion.Consultas;
+using Consulta.Aplicacion.Sagas;
 using Core.Infraestructura.MessageBroker;
 using Consulta.Aplicacion.Workers;
 using Core.Infraestructura;
@@ -7,11 +8,13 @@ using Mediator;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on all interfaces
+// Configure Kestrel to listen on all 
+#if RELEASE
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.ListenAnyIP(80);
 });
+#endif
 
 // Add services to the container.
 builder.Services.AddEndpointsApiExplorer();
@@ -40,8 +43,14 @@ builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<ImagenCreadaHandler>();
 
-// Register background worker
+// Register saga services
+builder.Services.AddSingleton<ISagaStateRepository, InMemorySagaStateRepository>();
+builder.Services.AddScoped<ImagenConsultaSagaOrchestrator>();
+
+// Register background workers
 builder.Services.AddHostedService<ImagenSubscriptionWorker>();
+builder.Services.AddHostedService<ImagenConsultaDataWorker>();
+builder.Services.AddHostedService<ImagenConsultaResponseWorker>();
 
 // Configure Swagger/OpenAPI
 builder.Services.AddEndpointsApiExplorer();
@@ -67,10 +76,27 @@ app.UseSwaggerUi(config =>
 
 app.MapGet("/health", () => Results.Ok());
 app.MapGet("/version", () => Results.Ok("1.0.0"));
+
+// Saga-based API endpoints
 app.MapPost("/api/consultas/imagen", async (IMediator mediator, ImagenMedicaConsultaConFiltros command) =>
 {
-    await mediator.Send(command);
-    return Results.Accepted();
+    var sagaId = await mediator.Send(new StartImagenConsultaSagaCommand(command));
+    return Results.Accepted($"/api/consultas/imagen/status/{sagaId}", new { sagaId = sagaId.ToString() });
+});
+
+app.MapGet("/api/consultas/imagen/status/{sagaId}", async (Guid sagaId, IMediator mediator) =>
+{
+    var state = await mediator.Send(new GetImagenConsultaSagaStateQuery(sagaId));
+    if (state == null)
+        return Results.NotFound();
+        
+    if (state.Status == "Completed")
+        return Results.Ok(new ImagenMedicaResponse { Imagenes = state.FinalResults });
+        
+    if (state.Status == "Failed")
+        return Results.BadRequest(new { error = state.ErrorMessage });
+        
+    return Results.Accepted($"/api/consultas/imagen/status/{sagaId}", new { status = state.Status });
 });
 
 

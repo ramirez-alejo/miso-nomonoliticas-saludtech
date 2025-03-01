@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Consulta.Dominio.Eventos;
 using Core.Dominio;
 using Core.Infraestructura.MessageBroker;
@@ -28,6 +29,9 @@ public class ImagenCreadaHandler
                 _logger.LogError("Received null imagen");
                 return;
             }
+            
+            _logger.LogInformation("Processing imagen message {@Imagen}", imagen);
+            _logger.LogInformation("Processing imagen message Json {@ImagenJson}", JsonSerializer.Serialize(imagen));
 
             // Create and publish demographics event
             var demografiaEvent = new ImagenDemografiaEvent
@@ -40,7 +44,7 @@ public class ImagenCreadaHandler
             };
             await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA, demografiaEvent);
             _logger.LogInformation("Evento deDemografia publicado para la Imagen con Id {ImagenId}", imagen.Id);
-            _logger.LogInformation("Detalle del evento: {@Evento}", imagen);
+            _logger.LogInformation("Detalle del evento: {@Evento}", demografiaEvent);
 
             // Create and publish modalidad event
             var modalidadEvent = new ImagenModalidadEvent
@@ -53,7 +57,7 @@ public class ImagenCreadaHandler
                 FechaCreacion = DateTime.UtcNow
             };
             await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD, modalidadEvent);
-            _logger.LogInformation("Evento de Modalidad publicado para la Imagen con Id {ImagenId}", imagen.Id);
+            _logger.LogInformation("Evento de Modalidad publicado con los datos: {@Evento}", modalidadEvent);
         }
         catch (Exception ex)
         {
