@@ -1,5 +1,5 @@
 using Consulta.Aplicacion.Sagas;
-using Consulta.Aplicacion.Sagas.Events;
+using Consulta.Dominio.Eventos;
 using Core.Infraestructura.MessageBroker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;

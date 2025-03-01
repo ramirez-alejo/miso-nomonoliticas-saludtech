@@ -1,11 +1,11 @@
 using Consulta.Aplicacion.Consultas;
 using Consulta.Aplicacion.Dtos;
 using Consulta.Aplicacion.Mapeo;
-using Consulta.Aplicacion.Sagas.Events;
 using Consulta.Dominio;
 using Core.Infraestructura.MessageBroker;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
+using Consulta.Dominio.Eventos;
 
 namespace Consulta.Aplicacion.Sagas;
 
@@ -55,13 +55,13 @@ public class ImagenConsultaSagaOrchestrator
         _logger.LogInformation("Started new saga with ID {SagaId}", sagaId);
 
         // Publish events to start the process
-        await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA_REQUEST, new ImagenConsultaDemografiaRequestEvent
+        await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA_REQUEST, new ImagenConsultaDemografiaRequestCommand
         {
             SagaId = sagaId,
             Filter = request.Demografia
         });
 
-        await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD_REQUEST, new ImagenConsultaModalidadRequestEvent
+        await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD_REQUEST, new ImagenConsultaModalidadRequestCommand
         {
             SagaId = sagaId,
             Filter = request.TipoImagen
@@ -141,7 +141,7 @@ public class ImagenConsultaSagaOrchestrator
             }
 
             // Proceed to data fetch step
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_REQUEST, new ImagenConsultaDataRequestEvent
+            await _messageProducer.SendJsonAsync(TOPIC_DATA_REQUEST, new ImagenConsultaDataRequestCommand
             {
                 SagaId = state.SagaId,
                 ImagenIds = intersectedIds
@@ -232,7 +232,7 @@ public class ImagenConsultaSagaOrchestrator
             await _stateRepository.SaveStateAsync(state);
 
             // Create a data warehouse request event
-            var dataWarehouseRequest = new ImagenConsultaDataWarehouseRequestEvent
+            var dataWarehouseRequest = new ImagenConsultaDataWarehouseRequestCommand
             {
                 SagaId = sagaId,
                 ImagenIds = imagenIds

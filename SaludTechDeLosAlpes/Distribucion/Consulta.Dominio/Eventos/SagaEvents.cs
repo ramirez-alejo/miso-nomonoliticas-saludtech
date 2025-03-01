@@ -1,28 +1,25 @@
-using Consulta.Dominio;
-using Core.Dominio;
-
-namespace Consulta.Aplicacion.Sagas.Events;
+namespace Consulta.Dominio.Eventos;
 
 // Request events
-public class ImagenConsultaDemografiaRequestEvent
+public class ImagenConsultaDemografiaRequestCommand
 {
     public Guid SagaId { get; set; }
     public ImagenDemografia Filter { get; set; }
 }
 
-public class ImagenConsultaModalidadRequestEvent
+public class ImagenConsultaModalidadRequestCommand
 {
     public Guid SagaId { get; set; }
     public ImagenTipoImagen Filter { get; set; }
 }
 
-public class ImagenConsultaDataRequestEvent
+public class ImagenConsultaDataRequestCommand
 {
     public Guid SagaId { get; set; }
     public Guid[] ImagenIds { get; set; }
 }
 
-public class ImagenConsultaDataWarehouseRequestEvent
+public class ImagenConsultaDataWarehouseRequestCommand
 {
     public Guid SagaId { get; set; }
     public Guid[] ImagenIds { get; set; }

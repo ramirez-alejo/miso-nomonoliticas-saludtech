@@ -1,11 +1,8 @@
 using Consulta.Aplicacion.Demografia.Consultas;
 using Consulta.Aplicacion.Demografia.Persistencia.Repositorios;
-using Consulta.Aplicacion.Demografia.Sagas.Events;
+using Consulta.Dominio.Eventos;
 using Core.Infraestructura.MessageBroker;
 using Mediator;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Consulta.Aplicacion.Demografia.Workers;
 
@@ -41,7 +38,7 @@ public class ImagenConsultaDemografiaRequestWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DEMOGRAFIA_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaDemografiaRequestEvent>(
+            await _messageConsumer.StartAsync<ImagenConsultaDemografiaRequestCommand>(
                 TOPIC_DEMOGRAFIA_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 

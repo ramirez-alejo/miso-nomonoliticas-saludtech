@@ -1,11 +1,7 @@
 using Consulta.Aplicacion.Modalidad.Consultas;
-using Consulta.Aplicacion.Modalidad.Persistencia.Repositorios;
-using Consulta.Aplicacion.Modalidad.Sagas.Events;
+using Consulta.Dominio.Eventos;
 using Core.Infraestructura.MessageBroker;
 using Mediator;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Consulta.Aplicacion.Modalidad.Workers;
 
@@ -40,7 +36,7 @@ public class ImagenConsultaModalidadRequestWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_MODALIDAD_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaModalidadRequestEvent>(
+            await _messageConsumer.StartAsync<ImagenConsultaModalidadRequestCommand>(
                 TOPIC_MODALIDAD_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 

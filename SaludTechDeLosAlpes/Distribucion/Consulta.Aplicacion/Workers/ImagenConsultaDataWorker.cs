@@ -1,5 +1,5 @@
 using Consulta.Aplicacion.Sagas;
-using Consulta.Aplicacion.Sagas.Events;
+using Consulta.Dominio.Eventos;
 using Core.Infraestructura.MessageBroker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -35,7 +35,7 @@ public class ImagenConsultaDataWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DATA_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaDataRequestEvent>(
+            await _messageConsumer.StartAsync<ImagenConsultaDataRequestCommand>(
                 TOPIC_DATA_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 
