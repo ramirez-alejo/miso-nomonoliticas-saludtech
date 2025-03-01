@@ -2,6 +2,8 @@ import uuid
 import datetime
 from bff.api.v1.esquemas import IngestionResponse, IngestionInput
 
+#TODO: Conectarlo con pulsar -> primero crear el contenedor en docker
+# Toda la logica ya esta implementada, desde el main.py se llama al graphql para hacer el envio del objeto, el despachador lo toma y lo procesa correctamente como se ve abajo
 class Despachador:
     def procesar_ingestion(self, input: IngestionInput) -> IngestionResponse:
         imagen_id = input.ImagenId
