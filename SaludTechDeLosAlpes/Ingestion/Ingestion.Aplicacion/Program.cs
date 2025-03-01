@@ -45,7 +45,7 @@ public class Program
 
 		// Register MessageBroker services
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-		builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
+		builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 		
 		// Register HttpClient
 		builder.Services.AddHttpClient();
