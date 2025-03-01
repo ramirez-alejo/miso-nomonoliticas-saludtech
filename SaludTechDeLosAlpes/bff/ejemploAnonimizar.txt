@@ -1,0 +1,31 @@
+input: {
+    Version: "1.0",
+    ImagenId: "IMG123",
+    TipoImagen: {
+      Modalidad: {
+        Nombre: "Rayos X",
+        Descripcion: "Radiografía de Tórax"
+      },
+      RegionAnatomica: {
+        Nombre: "Tórax",
+        Descripcion: "Región Torácica"
+      },
+      Patologia: {
+        Descripcion: "Neumonía"
+      }
+    },
+    AtributosImagen: {
+      Resolucion: "1024x768",
+      Contraste: "Alto",
+      Es3D: false,
+      FaseEscaner: "Pre-contraste"
+    },
+    UbicacionImagen: "/imagenes/rayosx123.png",
+    Es3D: false,
+    FaseEscaner: "Pre-contraste",
+    DateTime: "2024-03-01T12:30:45Z"
+  }) {
+  message
+  status
+}
+}
