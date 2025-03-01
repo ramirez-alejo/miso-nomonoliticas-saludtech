@@ -22,6 +22,12 @@ public class ImagenConsultaDataRequestEvent
     public Guid[] ImagenIds { get; set; }
 }
 
+public class ImagenConsultaDataWarehouseRequestEvent
+{
+    public Guid SagaId { get; set; }
+    public Guid[] ImagenIds { get; set; }
+}
+
 // Response events
 public class ImagenConsultaDemografiaResponseEvent
 {

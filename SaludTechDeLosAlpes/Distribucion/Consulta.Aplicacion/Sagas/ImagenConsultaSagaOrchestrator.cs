@@ -215,31 +215,36 @@ public class ImagenConsultaSagaOrchestrator
     // These methods have been removed as they are no longer needed.
     // The Demografia and Modalidad services now handle the requests directly via their own workers.
 
-    // Method to handle direct HTTP requests for data warehouse
-    public async Task<IEnumerable<ImagenDto>> HandleDataRequestDirectly(Guid sagaId, Guid[] imagenIds, CancellationToken cancellationToken)
+    // Method to handle data warehouse requests asynchronously
+    public async Task HandleDataRequest(Guid sagaId, Guid[] imagenIds)
     {
         try
         {
-            var finalRequest = new { Ids = imagenIds };
-            var response = await _httpClient.PostAsJsonAsync(_configuration["DataWarehouse:Host"], finalRequest, cancellationToken);
-            response.EnsureSuccessStatusCode();
-            var result = await response.Content.ReadFromJsonAsync<IEnumerable<ImagenDto>>(cancellationToken: cancellationToken);
+            // Update saga state
+            var state = await _stateRepository.GetStateAsync(sagaId);
+            if (state == null)
+            {
+                _logger.LogWarning("Received data request for unknown saga {SagaId}", sagaId);
+                return;
+            }
 
-            var imagenes = result?.Select(MapeoImagen.MapFromImagenDto).ToArray() ?? Array.Empty<ImagenMedica>();
+            state.Status = "DataRequested";
+            await _stateRepository.SaveStateAsync(state);
 
-            // Publish response event
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
+            // Create a data warehouse request event
+            var dataWarehouseRequest = new ImagenConsultaDataWarehouseRequestEvent
             {
                 SagaId = sagaId,
-                Imagenes = imagenes,
-                Success = true
-            });
+                ImagenIds = imagenIds
+            };
 
-            return result ?? Enumerable.Empty<ImagenDto>();
+            // Publish the event to the data warehouse service
+            await _messageProducer.SendJsonAsync("imagen-consulta-datawarehouse-request", dataWarehouseRequest);
+            _logger.LogInformation("Published data warehouse request for saga {SagaId}", sagaId);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error in data warehouse request for saga {SagaId}", sagaId);
+            _logger.LogError(ex, "Error publishing data warehouse request for saga {SagaId}", sagaId);
             
             // Publish failure event
             await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
@@ -249,8 +254,6 @@ public class ImagenConsultaSagaOrchestrator
                 Success = false,
                 ErrorMessage = ex.Message
             });
-
-            return Enumerable.Empty<ImagenDto>();
         }
     }
 }

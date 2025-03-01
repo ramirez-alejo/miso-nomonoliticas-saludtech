@@ -43,8 +43,15 @@ public class Program
 		// Log to the console
 		builder.Logging.AddConsole();
 
-		// Register MessageProducer
+		// Register MessageBroker services
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
+		builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
+		
+		// Register HttpClient
+		builder.Services.AddHttpClient();
+		
+		// Register background workers
+		builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>

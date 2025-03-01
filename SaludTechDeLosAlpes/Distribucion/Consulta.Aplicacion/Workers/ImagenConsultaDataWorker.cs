@@ -41,7 +41,7 @@ public class ImagenConsultaDataWorker : BackgroundService
                 async request => 
                 {
                     _logger.LogInformation("Received data warehouse request for saga {SagaId}", request.SagaId);
-                    await orchestrator.HandleDataRequestDirectly(request.SagaId, request.ImagenIds, stoppingToken);
+                    await orchestrator.HandleDataRequest(request.SagaId, request.ImagenIds);
                 }
             );
 
