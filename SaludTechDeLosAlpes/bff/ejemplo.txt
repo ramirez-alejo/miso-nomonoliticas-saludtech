@@ -1,0 +1,26 @@
+mutation MyMutation {
+  procesarIngestion(
+    input: {
+      Version: "1.0",
+      ImagenId: "12345",
+      TipoImagen: {
+        Modalidad: { Nombre: "Resonancia Magnética", Descripcion: "Imagen de alta resolución para tejidos blandos" },
+        RegionAnatomica: { Nombre: "Cerebro", Descripcion: "Escaneo detallado del cerebro" },
+        Patologia: { Descripcion: "Tumor cerebral" }
+      },
+      AtributosImagen: { Resolucion: "1080p", Contraste: "Alto", Es3D: true, FaseEscaner: "T1 con contraste" },
+      ContextoProcesal: { Etapa: "Diagnóstico inicial" },
+      Metadatos: {
+        EntornoClinico: { TipoAmbiente: "Hospital de referencia" },
+        Sintomas: [{ Descripcion: "Dolor de cabeza persistente" }, { Descripcion: "Pérdida de memoria" }]
+      },
+      Paciente: {
+        Demografia: { GrupoEdad: "Adulto", Sexo: "Masculino", Etnicidad: "Caucásico" },
+        Historial: { Fumador: false, Diabetico: true, CondicionesPrevias: ["Hipertensión", "Colesterol alto"] },
+        TokenAnonimo: "abc123xyz"
+      }
+    }){
+    message
+    status
+  }
+}
