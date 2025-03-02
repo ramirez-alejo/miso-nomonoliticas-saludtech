@@ -1,10 +1,13 @@
-import uuid
-import datetime
+import pulsar
+import json
 from bff.api.v1.esquemas import IngestionResponse, IngestionInput
 
-#TODO: Conectarlo con pulsar -> primero crear el contenedor en docker
-# Toda la logica ya esta implementada, desde el main.py se llama al graphql para hacer el envio del objeto, el despachador lo toma y lo procesa correctamente como se ve abajo
 class Despachador:
+    def __init__(self):
+
+        self.client = pulsar.Client('pulsar://localhost:6650')  
+        self.producer = self.client.create_producer('ingestion-anonimizar')
+
     def procesar_ingestion(self, input: IngestionInput) -> IngestionResponse:
         imagen_id = input.ImagenId
         version = input.Version
@@ -14,45 +17,64 @@ class Despachador:
         metadatos = input.Metadatos
         paciente = input.Paciente
 
-        # Logs detallados
-        print(f"[INFO] Iniciando procesamiento de ingestión para Imagen ID: {imagen_id}")
-        print(f"[INFO] Versión: {version}")
+        # Crear el objeto a enviar a Pulsar (aquí se usa un diccionario que luego convertimos a JSON)
+        mensaje = {
+            'imagen_id': imagen_id,
+            'version': version,
+            'tipo_imagen': {
+                'modalidad': tipo_imagen.Modalidad.Nombre,
+                'descripcion_modalidad': tipo_imagen.Modalidad.Descripcion,
+                'region_anatomica': tipo_imagen.RegionAnatomica.Nombre,
+                'descripcion_region_anatomica': tipo_imagen.RegionAnatomica.Descripcion,
+                'patologia': tipo_imagen.Patologia.Descripcion,
+            },
+            'atributos_imagen': {
+                'resolucion': atributos_imagen.Resolucion,
+                'contraste': atributos_imagen.Contraste,
+                'es_3d': atributos_imagen.Es3D,
+                'fase_escaner': atributos_imagen.FaseEscaner,
+            },
+            'contexto_procesal': {
+                'etapa': contexto_procesal.Etapa
+            },
+            'metadatos': {
+                'entorno_clinico': metadatos.EntornoClinico.TipoAmbiente,
+                'sintomas': [sintoma.Descripcion for sintoma in metadatos.Sintomas],
+            },
+            'paciente': {
+                'token_anonimo': paciente.TokenAnonimo,
+                'grupo_edad': paciente.Demografia.GrupoEdad,
+                'sexo': paciente.Demografia.Sexo,
+                'etnicidad': paciente.Demografia.Etnicidad,
+                'historial': {
+                    'fumador': 'Sí' if paciente.Historial.Fumador else 'No',
+                    'diabetico': 'Sí' if paciente.Historial.Diabetico else 'No',
+                    'condiciones_previas': ', '.join(paciente.Historial.CondicionesPrevias) if paciente.Historial.CondicionesPrevias else 'Ninguna',
+                }
+            }
+        }
+
+        mensaje_json = json.dumps(mensaje)
         
-        # Información del tipo de imagen
-        print(f"[INFO] Tipo de Imagen:")
-        print(f"  - Modalidad: {tipo_imagen.Modalidad.Nombre} ({tipo_imagen.Modalidad.Descripcion})")
-        print(f"  - Región Anatómica: {tipo_imagen.RegionAnatomica.Nombre} ({tipo_imagen.RegionAnatomica.Descripcion})")
-        print(f"  - Patología: {tipo_imagen.Patologia.Descripcion}")
+        try:
+            message_id = self.producer.send(mensaje_json.encode('utf-8'))
 
-        # Atributos de la imagen
-        print(f"[INFO] Atributos de Imagen:")
-        print(f"  - Resolución: {atributos_imagen.Resolucion}")
-        print(f"  - Contraste: {atributos_imagen.Contraste}")
-        print(f"  - Es 3D: {atributos_imagen.Es3D}")
-        print(f"  - Fase Escáner: {atributos_imagen.FaseEscaner}")
+            # Confirmar que el mensaje ha sido enviado y registrado en el tópico de Pulsar
+            print(f"[INFO] El mensaje con Imagen ID: {imagen_id} ha sido recibido en el tópico 'ingestion-anonimizar'.")
+            print(f"[INFO] Message ID: {message_id}")
+            print(f"[INFO] Mensaje enviado correctamente: {mensaje_json}")
 
-        # Contexto procesal
-        print(f"[INFO] Contexto Procesal: {contexto_procesal.Etapa}")
+            return IngestionResponse(
+                status="success",
+                message=f"Ingestión procesada correctamente para la Imagen ID {imagen_id}. Message ID: {message_id}"
+            )
+        
+        except Exception as e:
+            print(f"[ERROR] Error al enviar el mensaje: {str(e)}")
+            return IngestionResponse(
+                status="error",
+                message=f"Error al enviar el mensaje a Pulsar: {str(e)}"
+            )
 
-        # Metadatos
-        print(f"[INFO] Entorno Clínico: {metadatos.EntornoClinico.TipoAmbiente}")
-        print(f"[INFO] Síntomas asociados:")
-        for sintoma in metadatos.Sintomas:
-            print(f"  - {sintoma.Descripcion}")
-
-        # Datos del paciente
-        print(f"[INFO] Datos del Paciente:")
-        print(f"  - Token Anónimo: {paciente.TokenAnonimo}")
-        print(f"  - Grupo de Edad: {paciente.Demografia.GrupoEdad}")
-        print(f"  - Sexo: {paciente.Demografia.Sexo}")
-        print(f"  - Etnicidad: {paciente.Demografia.Etnicidad}")
-
-        print(f"[INFO] Historial Médico:")
-        print(f"  - Fumador: {'Sí' if paciente.Historial.Fumador else 'No'}")
-        print(f"  - Diabético: {'Sí' if paciente.Historial.Diabetico else 'No'}")
-        print(f"  - Condiciones Previas: {', '.join(paciente.Historial.CondicionesPrevias) if paciente.Historial.CondicionesPrevias else 'Ninguna'}")
-
-        return IngestionResponse(
-            status="success",
-            message=f"Ingestión procesada correctamente para la Imagen ID {imagen_id}."
-        )
+    def close(self):
+        self.producer.close()

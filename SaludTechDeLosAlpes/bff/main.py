@@ -8,7 +8,7 @@ app.include_router(router, prefix="/graphql")
 # no olvidar instalar los requirements
 # python -m uvicorn bff.main:app --reload
 # http://127.0.0.1:8000/graphql
-#copiar y pegar el archivo en ejemplo.txt y mandar la solicitud
+#copiar y pegar el archivo en ejemplo.txt en el graphql y mandar la solicitud
 
 if __name__ == "__main__":
     import uvicorn

@@ -8,4 +8,10 @@ class Mutation:
     @strawberry.mutation
     def procesar_ingestion(self, info: Info, input: IngestionInput) -> IngestionResponse:
         despachador = Despachador()
-        return despachador.procesar_ingestion(input)
+        response = despachador.procesar_ingestion(input)
+
+        # Aquí creamos y retornamos el objeto IngestionResponse
+        return IngestionResponse(
+            status=response.status,
+            message=response.message
+        )
