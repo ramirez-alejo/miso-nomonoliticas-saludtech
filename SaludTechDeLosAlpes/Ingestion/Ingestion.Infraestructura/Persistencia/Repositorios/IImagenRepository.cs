@@ -13,4 +13,5 @@ public interface IImagenRepository
     Task<IEnumerable<Imagen>> GetByModalidadAndDemografiaAsync(Modalidad modalidad, Demografia demografia,
         CancellationToken cancellationToken);
     Task<IEnumerable<Imagen>> GetByRegionAnatomicaAsync(string regionAnatomica, CancellationToken cancellationToken);
+    Task<Imagen[]> GetByIdsAsync(Guid[] ids, CancellationToken cancellationToken);
 }

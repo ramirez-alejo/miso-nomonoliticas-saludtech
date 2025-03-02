@@ -1,15 +1,8 @@
 using Core.Dominio;
 using Core.Infraestructura.MessageBroker;
-using Ingestion.Aplicacion.Dtos;
 using Ingestion.Aplicacion.Events;
-using Ingestion.Aplicacion.Mapeo;
 using Ingestion.Infraestructura.Persistencia;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System.Net.Http.Json;
+using Ingestion.Infraestructura.Persistencia.Repositorios;
 
 namespace Ingestion.Aplicacion.Workers;
 
@@ -22,9 +15,8 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
     private const string SUBSCRIPTION_NAME = "datawarehouse-request-handler";
     private IMessageConsumer? _messageConsumer;
     private IMessageProducer? _messageProducer;
-    private HttpClient? _httpClient;
-    private IConfiguration? _configuration;
     private AsyncServiceScope? _scope;
+    private IImagenRepository _imagenRepository;
 
     public ImagenConsultaDataWarehouseRequestWorker(
         ILogger<ImagenConsultaDataWarehouseRequestWorker> logger,
@@ -41,8 +33,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             _scope = _serviceProvider.CreateAsyncScope();
             _messageConsumer = _scope.Value.ServiceProvider.GetRequiredService<IMessageConsumer>();
             _messageProducer = _scope.Value.ServiceProvider.GetRequiredService<IMessageProducer>();
-            _httpClient = _scope.Value.ServiceProvider.GetRequiredService<HttpClient>();
-            _configuration = _scope.Value.ServiceProvider.GetRequiredService<IConfiguration>();
+            _imagenRepository = _scope.Value.ServiceProvider.GetRequiredService<IImagenRepository>();
             
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DATAWAREHOUSE_REQUEST, SUBSCRIPTION_NAME);
@@ -79,28 +70,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             
             // TODO: Mover al repositorio
             // Query the database for the requested images
-            var imagenEntities = await dbContext.Imagenes
-                .Include(i => i.TipoImagen)
-                    .ThenInclude(t => t.Modalidad)
-                .Include(i => i.TipoImagen)
-                    .ThenInclude(t => t.RegionAnatomica)
-                .Include(i => i.TipoImagen)
-                    .ThenInclude(t => t.Patologia)
-                .Include(i => i.AtributosImagen)
-                .Include(i => i.ContextoProcesal)
-                .Include(i => i.Metadatos)
-                    .ThenInclude(m => m.EntornoClinico)
-                .Include(i => i.Metadatos)
-                    .ThenInclude(m => m.Sintomas)
-                .Include(i => i.Paciente)
-                    .ThenInclude(p => p.Demografia)
-                .Include(i => i.Paciente)
-                    .ThenInclude(p => p.Historial)
-                .Where(i => request.ImagenIds.Contains(i.Id))
-                .ToListAsync(cancellationToken);
-
-            // Map the entities to the core domain model
-            var imagenes = imagenEntities.Select(MapeoImagen.MapToCore).ToArray();
+            var imagenes = await _imagenRepository.GetByIdsAsync(request.ImagenIds, cancellationToken);
 
             // Publish response event
             await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent

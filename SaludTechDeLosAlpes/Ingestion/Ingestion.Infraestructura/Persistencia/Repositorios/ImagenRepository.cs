@@ -198,4 +198,29 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
         
         return imagenes.Select(MapeoImagen.MapearImagenEntityADominio);
     }
+
+    public async Task<Imagen[]> GetByIdsAsync(Guid[] ids, CancellationToken cancellationToken)
+    {
+        var result = await context.Imagenes
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.Modalidad)
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.RegionAnatomica)
+            .Include(i => i.TipoImagen)
+            .ThenInclude(t => t.Patologia)
+            .Include(i => i.AtributosImagen)
+            .Include(i => i.ContextoProcesal)
+            .Include(i => i.Metadatos)
+            .ThenInclude(m => m.EntornoClinico)
+            .Include(i => i.Metadatos)
+            .ThenInclude(m => m.Sintomas)
+            .Include(i => i.Paciente)
+            .ThenInclude(p => p.Demografia)
+            .Include(i => i.Paciente)
+            .ThenInclude(p => p.Historial)
+            .Where(i => ids.Contains(i.Id))
+            .ToListAsync(cancellationToken);
+            return result.Select(MapeoImagen.MapearImagenEntityADominio).ToArray();
+
+    }
 }
