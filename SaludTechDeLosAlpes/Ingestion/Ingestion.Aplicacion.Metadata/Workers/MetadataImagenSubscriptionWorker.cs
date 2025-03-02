@@ -3,17 +3,17 @@ using Ingestion.Aplicacion.Metadata.Handlers;
 
 namespace Ingestion.Aplicacion.Metadata.Workers;
 
-public class MatadataImagenSubscriptionWorker: BackgroundService
+public class MetadataImagenSubscriptionWorker: BackgroundService
 {
-    private readonly ILogger<MatadataImagenSubscriptionWorker> _logger;
+    private readonly ILogger<MetadataImagenSubscriptionWorker> _logger;
     private readonly IServiceProvider _serviceProvider;
     private const string TOPIC_IMAGENT_METADATA = "metadata-imagen";
     private const string SUBSCRIPTION_NAME = "metadata-service";
     private IMessageConsumer? _messageConsumer;
     private AsyncServiceScope? _scope;
 
-    public MatadataImagenSubscriptionWorker(
-        ILogger<MatadataImagenSubscriptionWorker> logger,
+    public MetadataImagenSubscriptionWorker(
+        ILogger<MetadataImagenSubscriptionWorker> logger,
         IServiceProvider serviceProvider)
     {
         _logger = logger;

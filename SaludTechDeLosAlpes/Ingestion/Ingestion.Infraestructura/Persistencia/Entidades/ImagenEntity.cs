@@ -10,4 +10,6 @@ public class ImagenEntity
     public MetadatosEntity Metadatos { get; set; }
     public PacienteEntity Paciente { get; set; }
     public EntornoClinicoEntity EntornoClinico { get; set; }
+    public ICollection<ImagenAnonimizadaEntity> ImagenesAnonimizadas { get; set; } = new List<ImagenAnonimizadaEntity>();
+    public ICollection<MetadatosEntity> MetadatosGenerados { get; set; } = new List<MetadatosEntity>();
 }
