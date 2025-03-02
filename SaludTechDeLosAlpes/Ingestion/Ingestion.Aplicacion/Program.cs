@@ -52,6 +52,7 @@ public class Program
 		
 		// Register background workers
 		builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
+		builder.Services.AddHostedService<Workers.ImagenIngestionSagaWorker>();
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>
@@ -61,6 +62,10 @@ public class Program
 				.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
 		
 		builder.Services.AddScoped<IImagenRepository, ImagenRepository>();
+		
+		// Register saga services
+		builder.Services.AddSingleton<Ingestion.Aplicacion.Sagas.ISagaStateRepository, Ingestion.Aplicacion.Sagas.InMemorySagaStateRepository>();
+		builder.Services.AddScoped<Ingestion.Aplicacion.Sagas.ImagenIngestionSagaOrchestrator>();
 		
 		builder.Services.AddMediator(options =>
 			options.ServiceLifetime = ServiceLifetime.Scoped);
@@ -94,15 +99,29 @@ public class Program
 		// Apply the migrations
 		dbContext.Database.Migrate();
 
-		app.MapGet("/health", () => Results.Ok());
+app.MapGet("/health", () => Results.Ok());
 		
-		app.MapGet("/version", () => Results.Ok("1.0.0"));
+app.MapGet("/version", () => Results.Ok("1.0.0"));
 		
-		app.MapPost("/api/imagenes", async (CrearImagenMedicaCommand command, IMediator mediator) =>
-		{
-			var response = await mediator.Send(command);
-			return Results.Created($"/api/imagenes/{response.Id}", response);
-		});
+app.MapPost("/api/imagenes", async (CrearImagenMedicaCommand command, IMediator mediator) =>
+{
+	var response = await mediator.Send(command);
+	return Results.Created($"/api/imagenes/{response.Id}", response);
+});
+
+app.MapPost("/api/imagenes/procesar", async (Ingestion.Aplicacion.Dtos.ImagenDto imagen, IMediator mediator) =>
+{
+	var command = new Ingestion.Aplicacion.Comandos.StartImagenIngestionSagaCommand(imagen);
+	var sagaId = await mediator.Send(command);
+	return Results.Accepted($"/api/imagenes/procesar/{sagaId}", new { SagaId = sagaId });
+});
+
+app.MapGet("/api/imagenes/procesar/{sagaId}", async (Guid sagaId, IMediator mediator) =>
+{
+	var query = new Ingestion.Aplicacion.Consultas.GetImagenIngestionSagaStateQuery(sagaId);
+	var state = await mediator.Send(query);
+	return state is null ? Results.NotFound() : Results.Ok(state);
+});
 		
 		app.MapPost("/api/imagenes/ids", async (ImagenMedicaConsulta consulta, IMediator mediator) =>
 		{

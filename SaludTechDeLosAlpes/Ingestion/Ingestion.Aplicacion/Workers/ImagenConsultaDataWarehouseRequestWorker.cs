@@ -77,6 +77,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             using var scope = _serviceProvider.CreateScope();
             var dbContext = scope.ServiceProvider.GetRequiredService<ImagenDbContext>();
             
+            // TODO: Mover al repositorio
             // Query the database for the requested images
             var imagenEntities = await dbContext.Imagenes
                 .Include(i => i.TipoImagen)

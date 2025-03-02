@@ -5,6 +5,7 @@ namespace Ingestion.Dominio.Comandos;
 
 public class Anonimizar
 {
+	public Guid SagaId { get; set; }
 	public string Version { get; set; }
 	public Guid ImagenId { get; set; }
 	public TipoImagen TipoImagen { get; set; }

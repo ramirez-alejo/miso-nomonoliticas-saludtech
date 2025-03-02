@@ -28,6 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\Ingestion.Dominio\Ingestion.Dominio.csproj" />
       <ProjectReference Include="..\Ingestion.Infraestructura\Ingestion.Infraestructura.csproj" />
       <ProjectReference Include="..\..\Core\Core.Dominio\Core.Dominio.csproj" />
       <ProjectReference Include="..\..\Core\Core.Infraestructura\Core.Infraestructura.csproj" />
