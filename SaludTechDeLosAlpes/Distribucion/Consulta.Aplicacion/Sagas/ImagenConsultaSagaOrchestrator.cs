@@ -14,8 +14,6 @@ public class ImagenConsultaSagaOrchestrator
     private readonly IMessageProducer _messageProducer;
     private readonly ISagaStateRepository _stateRepository;
     private readonly ILogger<ImagenConsultaSagaOrchestrator> _logger;
-    private readonly HttpClient _httpClient;
-    private readonly IConfiguration _configuration;
 
     // Topic constants
     private const string TOPIC_DEMOGRAFIA_REQUEST = "imagen-consulta-demografia-request";
@@ -27,15 +25,11 @@ public class ImagenConsultaSagaOrchestrator
     public ImagenConsultaSagaOrchestrator(
         IMessageProducer messageProducer,
         ISagaStateRepository stateRepository,
-        ILogger<ImagenConsultaSagaOrchestrator> logger,
-        HttpClient httpClient,
-        IConfiguration configuration)
+        ILogger<ImagenConsultaSagaOrchestrator> logger)
     {
         _messageProducer = messageProducer;
         _stateRepository = stateRepository;
         _logger = logger;
-        _httpClient = httpClient;
-        _configuration = configuration;
     }
 
     public async Task<Guid> StartSaga(ImagenMedicaConsultaConFiltros request)
