@@ -66,7 +66,6 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
         try
         {
             using var scope = _serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ImagenDbContext>();
             
             // TODO: Mover al repositorio
             // Query the database for the requested images
