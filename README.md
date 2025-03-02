@@ -14,10 +14,8 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
 * [Arquitectura (Entrega 1)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-1)
 * [Arquitectura (Entrega 2)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-2)
 * [Escenarios de Calidad (Entrega 3)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3)
+* [Implementación (Entrega 4)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-4)
 
-## Experimentación
-
-En nuestro experimento implementamos una prueba de concepto para el escenario de calidad 1: [Consultas masivas con filtros específicos de metadata](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3#211-consultas-masivas-con-filtros-espec%C3%ADficos-de-metadata).
 
 ### Componentes
 
@@ -25,18 +23,30 @@ En nuestro experimento implementamos una prueba de concepto para el escenario de
    - Funcionalidad básica para generar eventos de dominio (Evento Gordo)
    - Publica eventos en el broker de mensajería
    - Almacena información en Postgres (simulando un data lake)
+   - Orquesta la Saga de Ingestion
 
-2. **Manejador de Eventos - Consultas**
+2. **Anominización**
+   - Procesa comandos de dominio
+   - Genera eventos de dominio
+   - Publica eventos en el broker de mensajería
+
+3. **Metadata**
+   - Procesa comandos de dominio
+   - Genera eventos de dominio
+   - Publica eventos en el broker de mensajería
+
+4. **Manejador de Eventos - Consultas**
    - Parte del subdominio de consultas
    - Procesa eventos de dominio
    - Genera comandos para los manejadores de filtros
+   - Orquesta la Saga de Consultas
 
-3. **Manejadores de Filtros - Consultas**
+5. **Manejadores de Filtros - Consultas**
    - Implementados: Demografía y Modalidad
    - Reciben comandos para almacenamiento de entidades
    - Bases de datos independientes (Postgres)
 
-4. **Servicio de Consultas**
+6. **Servicio de Consultas**
    - Integra resultados de los filtros
    - API sincrónica (considerado asincrónico con sagas para escenarios reales, implementado sincrónicamente para simplificar esta prueba de concepto)
    - Obtiene agregación completa usando IDs de los filtros
@@ -68,21 +78,12 @@ En nuestro experimento implementamos una prueba de concepto para el escenario de
    - Ajuste las variables de entorno de ser necesario para apuntar a los servicios locales
 
 3. Cargue los datos:
-   - Use el endpoint `CrearImagen` en Postman
+   - Use el endpoint `CrearImagen Saga` en Postman
    - Use el archivo descargado como fuente de datos
 
 ### Ejecución de Pruebas
 
-- Compare tiempos de respuesta entre endpoints de consulta
-- Recomendación: Use un subconjunto de datos para reducir tiempos de prueba
-- Opcionalmente puede usar el archivo completo para pruebas exhaustivas
-
-### Escenarios de Prueba
-
-1. **Con Filtros**
-   - Implementación con dos copias de cada filtro (Demografía y Modalidad)
-   - Permite consultas específicas por metadata
-
-2. **Sin Filtros**
-   - Implementación base para comparación de rendimiento
-   - Consultas directas sin optimización
+- Ejecute un llamado a `ConsultaUsandoFiltros Saga` en Postman
+- Verifique la respuesta y copie el id de la saga generada
+- Ejecute un llamado a `Consultar Saga Ingestion` en Postman con el id de la saga
+- Verifique la respuesta y el estado de la saga

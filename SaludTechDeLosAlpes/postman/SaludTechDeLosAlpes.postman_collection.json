@@ -35,6 +35,66 @@
 			"response": []
 		},
 		{
+			"name": "CrearImagen Saga",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"version\": \"1.0.0\",\r\n    \"tipoImagen\": {\r\n        \"modalidad\": {\r\n            \"nombre\": \"Escaneo TEP\",\r\n            \"descripcion\": \"Tomografias\"\r\n        },\r\n        \"regionAnatomica\": {\r\n            \"nombre\": \"Mrs\",\r\n            \"descripcion\": \"Dipyridamole\"\r\n        },\r\n        \"patologia\": {\r\n            \"descripcion\": \"Supplement Lingula Bronchus with Synth Sub, Open Approach\"\r\n        }\r\n    },\r\n    \"atributosImagen\": {\r\n        \"resolucion\": \"800x600\",\r\n        \"contraste\": \"60%\",\r\n        \"es3D\": false,\r\n        \"faseEscaner\": \"post tratamiento\"\r\n    },\r\n    \"contextoProcesal\": {\r\n        \"etapa\": \"Pre-operatorio\"\r\n    },\r\n    \"metadatos\": {\r\n        \"entornoClinico\": {\r\n            \"tipoAmbiente\": \"UCI\"\r\n        },\r\n        \"sintomas\": [\r\n            {\r\n                \"descripcion\": \"estornudo\"\r\n            }\r\n        ]\r\n    },\r\n    \"paciente\": {\r\n        \"demografia\": {\r\n            \"grupoEdad\": \"adulto\",\r\n            \"sexo\": \"Agender\",\r\n            \"etnicidad\": \"Kiowa\"\r\n        },\r\n        \"historial\": {\r\n            \"fumador\": false,\r\n            \"diabetico\": false,\r\n            \"condicionesPrevias\": [\r\n                \"Hrt dis postcardiac surg\"\r\n            ]\r\n        },\r\n        \"tokenAnonimo\": \"e4f9ffa6-ffa6-49a3-a9ac-ccdb82265d29\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{hostIngestion}}/api/imagenes/procesar",
+					"host": [
+						"{{hostIngestion}}"
+					],
+					"path": [
+						"api",
+						"imagenes",
+						"procesar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consultar Saga Ingestion",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"version\": \"1.0.0\",\r\n  \"tipoImagen\": {\r\n    \"modalidad\": {\r\n      \"nombre\": \"{{imagenes.tipoImagen.modalidad.nombre}}\",\r\n      \"descripcion\": \"{{imagenes.tipoImagen.modalidad.descripcion}}\"\r\n    },\r\n    \"regionAnatomica\": {\r\n      \"nombre\": \"{{imagenes.tipoImagen.regionAnatomica.nombre}}\",\r\n      \"descripcion\": \"{{imagenes.tipoImagen.regionAnatomica.descripcion}}\"\r\n    },\r\n    \"patologia\": {\r\n      \"descripcion\": \"{{imagenes.tipoImagen.patologia.descripcion}}\"\r\n    }\r\n  },\r\n  \"atributosImagen\": {\r\n    \"resolucion\": \"{{imagenes.atributosImagen.resolucion}}\",\r\n    \"contraste\": \"{{imagenes.atributosImagen.contraste}}\",\r\n    \"es3D\": {{imagenes.atributosImagen.es3D}},\r\n    \"faseEscaner\": \"{{imagenes.atributosImagen.faseEscaner}}\"\r\n  },\r\n  \"contextoProcesal\": {\r\n    \"etapa\": \"{{imagenes.contextoProcesal.etapa}}\"\r\n  },\r\n  \"metadatos\": {\r\n    \"entornoClinico\": {\r\n      \"tipoAmbiente\": \"{{imagenes.metadatos.entornoClinico.tipoAmbiente}}\"\r\n    },\r\n    \"sintomas\": [\r\n      {\r\n        \"descripcion\": \"{{imagenes.metadatos.sintomas.descripcion}}\"\r\n      }\r\n    ]\r\n  },\r\n  \"paciente\": {\r\n    \"demografia\": {\r\n      \"grupoEdad\": \"{{imagenes.paciente.demografia.grupoEdad}}\",\r\n      \"sexo\": \"{{imagenes.paciente.demografia.sexo}}\",\r\n      \"etnicidad\": \"{{imagenes.paciente.demografia.etnicidad}}\"\r\n    },\r\n    \"historial\": {\r\n      \"fumador\": {{imagenes.paciente.historial.fumador}},\r\n      \"diabetico\": {{imagenes.paciente.historial.diabetico}},\r\n      \"condicionesPrevias\": \r\n        {{imagenes.paciente.historial.condicionesPrevias}}\r\n      \r\n    },\r\n    \"tokenAnonimo\": \"{{imagenes.paciente.tokenAnonimo}}\"\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{hostIngestion}}/api/imagenes/procesar/b89114e5-f153-4818-aca0-88f9ede3e5ad",
+					"host": [
+						"{{hostIngestion}}"
+					],
+					"path": [
+						"api",
+						"imagenes",
+						"procesar",
+						"b89114e5-f153-4818-aca0-88f9ede3e5ad"
+					]
+				}
+			},
+			"response": []
+		},
+		{
 			"name": "Consulta sin Servicios de filtros",
 			"request": {
 				"method": "POST",
@@ -89,6 +149,95 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "ConsultaModalidad",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"modalidad\": {\r\n        \"descripcion\": \"Ultra sonido\"\r\n    },\r\n    \"regionAnatomica\": {\r\n        \"descripcion\": \"Indomethacin\"\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{hostModalidad}}/api/modalidad/buscar",
+					"host": [
+						"{{hostModalidad}}"
+					],
+					"path": [
+						"api",
+						"modalidad",
+						"buscar"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "ConsultaUsandoFiltros Saga",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"demografia\": {\r\n        \"grupoEdad\": \"geriatrico\",\r\n        \"sexo\": \"Male\"\r\n    },\r\n    \"tipoImagen\": {\r\n        \"modalidad\": {\r\n        \"descripcion\": \"Ultra sonido\"\r\n        }\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{hostConsultas}}/api/consultas/imagen",
+					"host": [
+						"{{hostConsultas}}"
+					],
+					"path": [
+						"api",
+						"consultas",
+						"imagen"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Consulta Saga",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"demografia\": {\r\n        \"grupoEdad\": \"adulto\",\r\n        \"sexo\": \"Female\",\r\n        \"etnicidad\": \"Delaware\"\r\n    },\r\n    \"tipoImagen\": {\r\n        \"modalidad\": {\r\n            \"nombre\": \"Honorable\",\r\n            \"descripcion\": \"Histopatologia\"\r\n        },\r\n        \"regionAnatomica\": {\r\n            \"nombre\": \"Dr\",\r\n            \"descripcion\": \"ALK-Abello, Inc.\"\r\n        },\r\n        \"patologia\": {\r\n            \"descripcion\": \"Packing of Right Upper Leg using Packing Material\"\r\n        }\r\n    }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{hostConsultas}}/api/consultas/imagen/status/88d14315-019a-4fe7-bc87-48f18aa2fcc1",
+					"host": [
+						"{{hostConsultas}}"
+					],
+					"path": [
+						"api",
+						"consultas",
+						"imagen",
+						"status",
+						"88d14315-019a-4fe7-bc87-48f18aa2fcc1"
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
@@ -122,6 +271,16 @@
 		{
 			"key": "hostConsultas",
 			"value": "http://localhost:5000",
+			"type": "string"
+		},
+		{
+			"key": "hostModalidad",
+			"value": "http://localhost:5002",
+			"type": "string"
+		},
+		{
+			"key": "hostDemografia",
+			"value": "http://localhost:5001",
 			"type": "string"
 		}
 	]
