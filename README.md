@@ -25,17 +25,17 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
    - Almacena información en Postgres (simulando un data lake)
    - Orquesta la Saga de Ingestion
 
-2. **Anominización**
+2. **Ingestion - Anominización**
    - Procesa comandos de dominio
    - Genera eventos de dominio
    - Publica eventos en el broker de mensajería
 
-3. **Metadata**
+3. **Ingestion - Metadata**
    - Procesa comandos de dominio
    - Genera eventos de dominio
    - Publica eventos en el broker de mensajería
 
-4. **Manejador de Eventos - Consultas**
+4. **Servicio de Consultas**
    - Parte del subdominio de consultas
    - Procesa eventos de dominio
    - Genera comandos para los manejadores de filtros
