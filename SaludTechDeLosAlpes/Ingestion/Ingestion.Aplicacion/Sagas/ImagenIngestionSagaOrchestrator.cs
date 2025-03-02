@@ -37,7 +37,7 @@ public class ImagenIngestionSagaOrchestrator
     {
         // Create new saga state
         var sagaId = Guid.NewGuid();
-        var imagenId = Guid.NewGuid();
+        var imagenId = imagenDto.Id;
         
         var state = new ImagenIngestionSagaState
         {
@@ -57,9 +57,8 @@ public class ImagenIngestionSagaOrchestrator
         {
             SagaId = sagaId,
             ImagenId = imagenId,
-            Version = "1.0",
+            Version = "1.0.0",
             UbicacionImagen = imagenDto.Url,
-            // Add other properties as needed
         };
 
         await _messageProducer.SendJsonAsync(TOPIC_ANONIMIZAR, anonimizarCommand);
@@ -70,8 +69,7 @@ public class ImagenIngestionSagaOrchestrator
         {
             SagaId = sagaId,
             ImagenId = imagenId,
-            Version = "1.0",
-            // Add other properties as needed
+            Version = "1.0.0",
         };
 
         await _messageProducer.SendJsonAsync(TOPIC_METADATA, generarMetadataCommand);
@@ -134,40 +132,14 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task TryCompleteSaga(ImagenIngestionSagaState state)
     {
-        // Check if both anonimización and metadata generation are completed
         if (state.AnonimizacionCompleted && state.MetadataCompleted)
         {
             try
             {
-                // Get the imagen from the repository or create a new one if it doesn't exist
-                Imagen imagen;
-                try
-                {
-                    imagen = await _imagenRepository.GetByIdAsync(state.ImagenId, CancellationToken.None);
-                }
-                catch
-                {
-                    // Create a new imagen if it doesn't exist
-                    imagen = new Imagen
-                    {
-                        Id = state.ImagenId,
-                        Version = "1.0"
-                    };
-                }
-
-                // Update the imagen with the data from the saga
-                // This is a simplified example, you would need to map all the properties
-                // from the saga state to the imagen object
-
-                // Save the imagen
-                if (imagen.Id == Guid.Empty)
-                {
-                    await _imagenRepository.AddAsync(imagen, CancellationToken.None);
-                }
-                else
-                {
-                    await _imagenRepository.UpdateAsync(imagen, CancellationToken.None);
-                }
+                
+                await _imagenRepository.UpsertImagenAnonimizada(state.ImagenId, state.ImagenProcesadaPath,
+                    CancellationToken.None);
+                await _imagenRepository.UpsertMetadataGenerada(state.ImagenId, state.Tags, CancellationToken.None);
 
                 // Complete the saga
                 await CompleteSaga(state);

@@ -43,8 +43,13 @@ builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<ImagenCreadaHandler>();
 
+// Configure Redis connection
+var redisConnection = Environment.GetEnvironmentVariable("Redis:ConnectionString") 
+                     ?? builder.Configuration.GetValue<string>("Redis:ConnectionString") 
+                     ?? "redis:6379";
+
 // Register saga services
-builder.Services.AddSingleton<ISagaStateRepository, InMemorySagaStateRepository>();
+builder.Services.AddSingleton<ISagaStateRepository>(provider => new RedisSagaStateRepository(redisConnection));
 builder.Services.AddScoped<ImagenConsultaSagaOrchestrator>();
 
 // Register background workers

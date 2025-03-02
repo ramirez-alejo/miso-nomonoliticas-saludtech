@@ -14,4 +14,6 @@ public interface IImagenRepository
         CancellationToken cancellationToken);
     Task<IEnumerable<Imagen>> GetByRegionAnatomicaAsync(string regionAnatomica, CancellationToken cancellationToken);
     Task<Imagen[]> GetByIdsAsync(Guid[] ids, CancellationToken cancellationToken);
+    Task UpsertMetadataGenerada(Guid imagenId, Dictionary<string, string> tags, CancellationToken cancellationToken);
+    Task UpsertImagenAnonimizada(Guid imagenId, string ubicacionImagenProcesada, CancellationToken cancellationToken);
 }

@@ -11,6 +11,7 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
             return new ImagenAnonimizadaEntity
             {
                 ImagenId = model.ImagenId,
+                Version = model.Version,
                 DescripcionModalidad = model.TipoImagen.Modalidad.Descripcion,
                 NombreModalidad = model.TipoImagen.Modalidad.Nombre,
                 RegionAnatomica = model.TipoImagen.RegionAnatomica.Nombre,
@@ -20,6 +21,8 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
                 Es3D = model.AtributosImagen?.Es3D ?? false,
                 FaseEscaner = model.AtributosImagen?.FaseEscaner,
                 UbicacionImagen = model.UbicacionImagen,
+                DetalleAnonimizacion = model.DetalleAnonimizacion,
+                UbicacionImagenProcesada = model.ImagenProcesadaPath
             };
         }
 
@@ -28,6 +31,7 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
             return new Modelos.Anonimizar
             {
                 ImagenId = dto.ImagenId,
+                Version = dto.Version,
                 TipoImagen = new TipoImagen
                 {
                     Modalidad = new Modalidad

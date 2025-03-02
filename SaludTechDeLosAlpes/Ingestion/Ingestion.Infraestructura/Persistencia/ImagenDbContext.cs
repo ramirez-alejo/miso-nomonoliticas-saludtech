@@ -154,14 +154,21 @@ public class ImagenDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.ImagenProcesadaPath).IsRequired();
-            entity.HasOne(e => e.Imagen).WithMany().IsRequired();
+            entity.HasOne(e => e.Imagen)
+                .WithMany()
+                .HasForeignKey(e => e.ImagenId)
+                .IsRequired();
+
         });
         
         // MetadatoGenerados configuration
         modelBuilder.Entity<MetadatoGeneradosEntity>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.HasOne(e => e.Imagen).WithMany().IsRequired();
+            entity.HasOne(e => e.Imagen)
+                .WithMany()
+                .HasForeignKey(e => e.ImagenId)
+                .IsRequired();
             entity.Property(e => e.Key).IsRequired();
             entity.Property(e => e.Value).IsRequired();
         });
