@@ -67,7 +67,6 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
         {
             using var scope = _serviceProvider.CreateScope();
             
-            // TODO: Mover al repositorio
             // Query the database for the requested images
             var imagenes = await _imagenRepository.GetByIdsAsync(request.ImagenIds, cancellationToken);
 
