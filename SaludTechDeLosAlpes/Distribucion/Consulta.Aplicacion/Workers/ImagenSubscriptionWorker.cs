@@ -38,7 +38,7 @@ public class ImagenSubscriptionWorker : BackgroundService
             await _messageConsumer.StartAsync<Imagen>(
                 TOPIC_IMAGEN_MEDICA,
                 SUBSCRIPTION_NAME,
-                async imagen => await imagenHandler.HandleImagenCreada(imagen)
+                imagenHandler.HandleImagenCreada
             );
 
             // Keep the worker running

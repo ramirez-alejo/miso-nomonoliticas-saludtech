@@ -122,6 +122,31 @@ namespace Ingestion.Infraestructura.Migrations
                     b.ToTable("Historiales");
                 });
 
+            modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.ImagenAnonimizadaEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("ImagenEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ImagenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ImagenProcesadaPath")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImagenEntityId");
+
+                    b.HasIndex("ImagenId");
+
+                    b.ToTable("ImagenAnonimizadas");
+                });
+
             modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -167,6 +192,30 @@ namespace Ingestion.Infraestructura.Migrations
                     b.ToTable("Imagenes");
                 });
 
+            modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.MetadatoGeneradosEntity", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ImagenId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ImagenId");
+
+                    b.ToTable("MetadatosGenerados");
+                });
+
             modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.MetadatosEntity", b =>
                 {
                     b.Property<Guid>("Id")
@@ -176,9 +225,17 @@ namespace Ingestion.Infraestructura.Migrations
                     b.Property<Guid?>("EntornoClinicoId")
                         .HasColumnType("uuid");
 
+                    b.Property<Guid?>("ImagenEntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ImagenId")
+                        .HasColumnType("uuid");
+
                     b.HasKey("Id");
 
                     b.HasIndex("EntornoClinicoId");
+
+                    b.HasIndex("ImagenEntityId");
 
                     b.ToTable("Metadatos");
                 });
@@ -315,6 +372,21 @@ namespace Ingestion.Infraestructura.Migrations
                     b.ToTable("MetadatosSintomas", (string)null);
                 });
 
+            modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.ImagenAnonimizadaEntity", b =>
+                {
+                    b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", null)
+                        .WithMany("ImagenesAnonimizadas")
+                        .HasForeignKey("ImagenEntityId");
+
+                    b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", "Imagen")
+                        .WithMany()
+                        .HasForeignKey("ImagenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Imagen");
+                });
+
             modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", b =>
                 {
                     b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.AtributosImagenEntity", "AtributosImagen")
@@ -358,11 +430,26 @@ namespace Ingestion.Infraestructura.Migrations
                     b.Navigation("TipoImagen");
                 });
 
+            modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.MetadatoGeneradosEntity", b =>
+                {
+                    b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", "Imagen")
+                        .WithMany()
+                        .HasForeignKey("ImagenId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Imagen");
+                });
+
             modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.MetadatosEntity", b =>
                 {
                     b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.EntornoClinicoEntity", "EntornoClinico")
                         .WithMany()
                         .HasForeignKey("EntornoClinicoId");
+
+                    b.HasOne("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", null)
+                        .WithMany("MetadatosGenerados")
+                        .HasForeignKey("ImagenEntityId");
 
                     b.Navigation("EntornoClinico");
                 });
@@ -424,6 +511,13 @@ namespace Ingestion.Infraestructura.Migrations
                         .HasForeignKey("SintomasId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Ingestion.Infraestructura.Persistencia.Entidades.ImagenEntity", b =>
+                {
+                    b.Navigation("ImagenesAnonimizadas");
+
+                    b.Navigation("MetadatosGenerados");
                 });
 #pragma warning restore 612, 618
         }

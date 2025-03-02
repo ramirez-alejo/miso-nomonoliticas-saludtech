@@ -31,6 +31,8 @@ public class ImagenDbContext : DbContext
     public DbSet<HistorialEntity> Historiales { get; set; }
     public DbSet<EntornoClinicoEntity> EntornosClinicos { get; set; }
     public DbSet<SintomaEntity> Sintomas { get; set; }
+    public DbSet<ImagenAnonimizadaEntity> ImagenAnonimizadas { get; set; }
+    public DbSet<MetadatoGeneradosEntity> MetadatosGenerados { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -145,6 +147,30 @@ public class ImagenDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Descripcion).IsRequired();
+        });
+        
+        // ImagenAnonimizada configuration
+        modelBuilder.Entity<ImagenAnonimizadaEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ImagenProcesadaPath).IsRequired();
+            entity.HasOne(e => e.Imagen)
+                .WithMany()
+                .HasForeignKey(e => e.ImagenId)
+                .IsRequired();
+
+        });
+        
+        // MetadatoGenerados configuration
+        modelBuilder.Entity<MetadatoGeneradosEntity>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Imagen)
+                .WithMany()
+                .HasForeignKey(e => e.ImagenId)
+                .IsRequired();
+            entity.Property(e => e.Key).IsRequired();
+            entity.Property(e => e.Value).IsRequired();
         });
     }
 }

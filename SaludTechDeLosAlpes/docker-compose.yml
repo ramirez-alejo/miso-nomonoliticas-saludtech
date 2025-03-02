@@ -61,6 +61,16 @@ services:
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - pulsar
+    volumes:
+      - ./data/redis:/data
+
   # Services
   modalidad-service:
     build:
@@ -116,12 +126,15 @@ services:
       - ServiciosFiltro__Demografia=http://demografia-service/api/demografia/buscar
       - ServiciosFiltro__Modalidad=http://modalidad-service/api/modalidad/buscar
       - DataWarehouse__Host=http://ingestion-service/api/imagenes/ids
+      - Redis__ConnectionString=redis:6379
     depends_on:
       broker:
         condition: service_started
       demografia-service:
         condition: service_started
       modalidad-service:
+        condition: service_started
+      redis:
         condition: service_started
     networks:
       - pulsar
@@ -139,10 +152,13 @@ services:
       - ConnectionStrings__DefaultConnection=Host=ingestion-db;Database=SaludTechIngestionDb;Username=postgres;Password=postgres
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
+      - Redis__ConnectionString=redis:6379
     depends_on:
       ingestion-db:
         condition: service_healthy
       broker:
+        condition: service_started
+      redis:
         condition: service_started
     networks:
       - pulsar

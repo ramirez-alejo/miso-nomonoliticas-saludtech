@@ -57,7 +57,7 @@ public class Program
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 		builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 		builder.Services.AddScoped<GenerarMetadataHandler>();
-		builder.Services.AddHostedService<MatadataImagenSubscriptionWorker>();
+		builder.Services.AddHostedService<MetadataImagenSubscriptionWorker>();
 
 		// Add mediator
 		builder.Services.AddMediator(options =>

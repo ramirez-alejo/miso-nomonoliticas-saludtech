@@ -1,20 +1,17 @@
-using Consulta.Aplicacion.Dtos;
+
+using Core.Dominio;
 
 namespace Ingestion.Aplicacion.Anonimizacion.Modelos;
 
 public class Anonimizar
 {
+	public string Version { get; set; }
 	public Guid ImagenId { get; set; }
 	public TipoImagen TipoImagen { get; set; }
 	public AtributosImagen AtributosImagen { get; set; }
-	public string Resolucion { get; set; }
-	public string Contraste { get; set; }
-	public bool Es3D { get; set; }
-	public string FaseEscaner { get; set; }
-
 	public string UbicacionImagen { get; set; }
-	public string ImagenProcesadaPath { get; set; }
-	public string DetalleAnonimizacion { get; set; }
+	public string ImagenProcesadaPath { get; set; } = string.Empty;
+	public string DetalleAnonimizacion { get; set; } = string.Empty;
 	
 	
 	

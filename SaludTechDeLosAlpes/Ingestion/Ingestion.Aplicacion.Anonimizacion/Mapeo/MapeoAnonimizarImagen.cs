@@ -1,5 +1,4 @@
-using Consulta.Dominio;
-using Consulta.Dominio.Eventos;
+using Core.Dominio;
 using Ingestion.Aplicacion.Anonimizacion.Persistencia.Entidades;
 using Ingestion.Dominio.Comandos;
 
@@ -12,15 +11,18 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
             return new ImagenAnonimizadaEntity
             {
                 ImagenId = model.ImagenId,
+                Version = model.Version,
                 DescripcionModalidad = model.TipoImagen.Modalidad.Descripcion,
                 NombreModalidad = model.TipoImagen.Modalidad.Nombre,
                 RegionAnatomica = model.TipoImagen.RegionAnatomica.Nombre,
                 DescripcionRegionAnatomica = model.TipoImagen.RegionAnatomica.Descripcion,
-                Resolucion = model.Resolucion,
-                Contraste = model.Contraste,
-                Es3D = model.Es3D,
-                FaseEscaner = model.FaseEscaner,
+                Resolucion = model.AtributosImagen?.Resolucion,
+                Contraste = model.AtributosImagen?.Contraste,
+                Es3D = model.AtributosImagen?.Es3D ?? false,
+                FaseEscaner = model.AtributosImagen?.FaseEscaner,
                 UbicacionImagen = model.UbicacionImagen,
+                DetalleAnonimizacion = model.DetalleAnonimizacion,
+                UbicacionImagenProcesada = model.ImagenProcesadaPath
             };
         }
 
@@ -29,12 +31,27 @@ namespace Ingestion.Aplicacion.Anonimizacion.Mapeo
             return new Modelos.Anonimizar
             {
                 ImagenId = dto.ImagenId,
-                TipoImagen = dto.TipoImagen,
-                AtributosImagen = dto.AtributosImagen,
-                Resolucion = dto.Resolucion,
-                Contraste = dto.Contraste,
-                Es3D = dto.Es3D,
-                FaseEscaner = dto.FaseEscaner,
+                Version = dto.Version,
+                TipoImagen = new TipoImagen
+                {
+                    Modalidad = new Modalidad
+                    {
+                        Nombre = dto.TipoImagen?.Modalidad?.Nombre,
+                        Descripcion = dto.TipoImagen?.Modalidad?.Descripcion,
+                    },
+                    RegionAnatomica = new RegionAnatomica
+                    {
+                        Nombre = dto.TipoImagen?.RegionAnatomica?.Nombre,
+                        Descripcion = dto.TipoImagen?.RegionAnatomica?.Descripcion,
+                    },
+                },
+                AtributosImagen = new AtributosImagen
+                {
+                    Resolucion = dto.Resolucion,
+                    Contraste = dto.Contraste,
+                    Es3D = dto.Es3D,
+                    FaseEscaner = dto.FaseEscaner,
+                },
                 UbicacionImagen = dto.UbicacionImagen,
             };
         }

@@ -27,9 +27,9 @@ public static class MapeoMetadataImagen
 			Etnicidad = modelo.Demografia?.Etnicidad,
 			Fumador = modelo.Historial?.Fumador ?? false,
 			Diabetico = modelo.Historial?.Diabetico ?? false,
-			CondicionesPrevias = string.Join('|', modelo.Historial?.CondicionesPrevias),
+			CondicionesPrevias = string.Join('|', modelo.Historial?.CondicionesPrevias ?? []),
 			TipoAmbiente = modelo.EntornoClinico?.TipoAmbiente,
-			Sintomas = string.Join('|', modelo.Sintomas.Select(s => s.Descripcion)),
+			Sintomas = string.Join('|', modelo.Sintomas?.Select(s => s.Descripcion) ?? []),
 			Timestamp = DateTime.UtcNow
 		};
 	}
@@ -55,17 +55,17 @@ public static class MapeoMetadataImagen
 			{
 				Modalidad = new Core.Dominio.Modalidad
 				{
-					Nombre = comando.TipoImagen.Modalidad.Nombre,
-					Descripcion = comando.TipoImagen.Modalidad.Descripcion
+					Nombre = comando.TipoImagen?.Modalidad?.Nombre,
+					Descripcion = comando.TipoImagen?.Modalidad?.Descripcion
 				},
 				RegionAnatomica = new Core.Dominio.RegionAnatomica
 				{
-					Nombre = comando.TipoImagen.RegionAnatomica.Nombre,
-					Descripcion = comando.TipoImagen.RegionAnatomica.Descripcion
+					Nombre = comando.TipoImagen?.RegionAnatomica?.Nombre,
+					Descripcion = comando.TipoImagen?.RegionAnatomica?.Descripcion
 				},
 				Patologia = new Core.Dominio.Patologia
 				{
-					Descripcion = comando.TipoImagen.Patologia.Descripcion
+					Descripcion = comando.TipoImagen?.Patologia?.Descripcion
 				}
 			},
 			Resolucion = comando.Resolucion,
@@ -74,23 +74,23 @@ public static class MapeoMetadataImagen
 			FaseEscaner = comando.FaseEscaner,
 			ContextoProcesal = new Core.Dominio.ContextoProcesal
 			{
-				Etapa = comando.ContextoProcesal.Etapa
+				Etapa = comando.ContextoProcesal?.Etapa
 			},
 			Demografia = new Core.Dominio.Demografia
 			{
-				GrupoEdad = comando.Demografia.GrupoEdad,
-				Sexo = comando.Demografia.Sexo,
-				Etnicidad = comando.Demografia.Etnicidad
+				GrupoEdad = comando.Demografia?.GrupoEdad,
+				Sexo = comando.Demografia?.Sexo,
+				Etnicidad = comando.Demografia?.Etnicidad
 			},
 			Historial = new Core.Dominio.Historial
 			{
-				Fumador = comando.Historial.Fumador,
-				Diabetico = comando.Historial.Diabetico,
-				CondicionesPrevias = comando.Historial.CondicionesPrevias
+				Fumador = comando.Historial?.Fumador ?? false,
+				Diabetico = comando.Historial?.Diabetico ?? false,
+				CondicionesPrevias = comando.Historial?.CondicionesPrevias
 			},
 			EntornoClinico = new Core.Dominio.EntornoClinico
 			{
-				TipoAmbiente = comando.EntornoClinico.TipoAmbiente
+				TipoAmbiente = comando.EntornoClinico?.TipoAmbiente
 			},
 			Sintomas = comando.Sintomas,
 			Tags = new Dictionary<string, string>()

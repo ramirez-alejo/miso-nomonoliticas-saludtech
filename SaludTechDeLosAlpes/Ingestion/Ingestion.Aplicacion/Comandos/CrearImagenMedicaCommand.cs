@@ -6,8 +6,6 @@ using Microsoft.Extensions.Logging;
 
 namespace Ingestion.Aplicacion.Comandos;
 
-public record ImagenCreadaMessage(Guid Id, string Tipo, DateTime FechaCreacion);
-
 public class CrearImagenMedicaCommand : Imagen, IRequest<ImagenMedicaResponse>
 {
 	
@@ -41,11 +39,8 @@ public class CrearImagenMedicaHandler : IRequestHandler<CrearImagenMedicaCommand
         _logger.LogInformation("Imagen medica creada con id {ResultId}", result.Id);
 
         // Enviar mensaje de imagen creada
-        var mensaje = new ImagenCreadaMessage(
-            result.Id,
-            nameof(ImagenCreadaMessage),
-            DateTime.UtcNow
-        );
+        var mensaje = command as Imagen;
+        mensaje.Id = result.Id;
 
         await _messageProducer.SendJsonAsync(TOPIC_IMAGEN_CREADA, mensaje);
         _logger.LogInformation("Mensaje de imagen creada enviado para id {ResultId} en topic {Topic}", result.Id, TOPIC_IMAGEN_CREADA);
