@@ -3,63 +3,101 @@ networks:
   pulsar:
     driver: bridge
 services:
-  # Databases
-  modalidad-db:
-    image: postgres:latest
-    container_name: modalidad-db
-    environment:
-      - POSTGRES_DB=SaludTechModalidadDb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5433:5432"
-    networks:
-      - pulsar
-    volumes:
-      - ./data/modalidad-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # Databases - Commented out as we're now using GCP Cloud SQL
+  # modalidad-db:
+  #   image: postgres:latest
+  #   container_name: modalidad-db
+  #   environment:
+  #     - POSTGRES_DB=SaludTechModalidadDb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5433:5432"
+  #   networks:
+  #     - pulsar
+  #   volumes:
+  #     - ./data/modalidad-db:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  demografia-db:
-    image: postgres:latest
-    container_name: demografia-db
-    environment:
-      - POSTGRES_DB=SaludTechDemografiaDb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5434:5432"
-    networks:
-      - pulsar
-    volumes:
-      - ./data/demografia-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # demografia-db:
+  #   image: postgres:latest
+  #   container_name: demografia-db
+  #   environment:
+  #     - POSTGRES_DB=SaludTechDemografiaDb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5434:5432"
+  #   networks:
+  #     - pulsar
+  #   volumes:
+  #     - ./data/demografia-db:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
-  ingestion-db:
-    image: postgres:latest
-    container_name: ingestion-db
-    environment:
-      - POSTGRES_DB=SaludTechIngestionDb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5435:5432"
-    networks:
-      - pulsar
-    volumes:
-      - ./data/ingestion-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # ingestion-db:
+  #   image: postgres:latest
+  #   container_name: ingestion-db
+  #   environment:
+  #     - POSTGRES_DB=SaludTechIngestionDb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5435:5432"
+  #   networks:
+  #     - pulsar
+  #   volumes:
+  #     - ./data/ingestion-db:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # anonimizacion-db:
+  #   image: postgres:latest
+  #   container_name: anonimizacion-db
+  #   environment:
+  #     - POSTGRES_DB=SaludTechAnonimizacionDb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5436:5432"
+  #   networks:
+  #     - pulsar
+  #   volumes:
+  #     - ./data/anonimizacion-db:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+
+  # metadata-db:
+  #   image: postgres:latest
+  #   container_name: metadata-db
+  #   environment:
+  #     - POSTGRES_DB=SaludTechMetadataDb
+  #     - POSTGRES_USER=postgres
+  #     - POSTGRES_PASSWORD=postgres
+  #   ports:
+  #     - "5437:5432"
+  #   networks:
+  #     - pulsar
+  #   volumes:
+  #     - ./data/metadata-db:/var/lib/postgresql/data
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
   redis:
     image: redis:latest
@@ -76,15 +114,14 @@ services:
     build:
       context: .
       dockerfile: Distribucion/Consulta.Aplicacion.Modalidad/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/modalidad-service:latest
     container_name: modalidad-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=modalidad-db;Database=SaludTechModalidadDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=10.114.240.3;Database=SaludTechModalidadDb;Username=postgres;Password=postgres;SslMode=Disable
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
     depends_on:
-      modalidad-db:
-        condition: service_healthy
       broker:
         condition: service_started
     networks:
@@ -97,15 +134,14 @@ services:
     build:
       context: .
       dockerfile: Distribucion/Consulta.Aplicacion.Demografia/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/demografia-service:latest
     container_name: demografia-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=demografia-db;Database=SaludTechDemografiaDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=10.114.240.3;Database=SaludTechDemografiaDb;Username=postgres;Password=postgres;SslMode=Disable
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
     depends_on:
-      demografia-db:
-        condition: service_healthy
       broker:
         condition: service_started
     networks:
@@ -118,6 +154,7 @@ services:
     build:
       context: .
       dockerfile: Distribucion/Consulta.Aplicacion/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/consulta-service:latest
     container_name: consulta-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
@@ -146,16 +183,15 @@ services:
     build:
       context: .
       dockerfile: Ingestion/Ingestion.Aplicacion/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/ingestion-service:latest
     container_name: ingestion-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=ingestion-db;Database=SaludTechIngestionDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=10.114.240.3;Database=SaludTechIngestionDb;Username=postgres;Password=postgres;SslMode=Disable
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
       - Redis__ConnectionString=redis:6379
     depends_on:
-      ingestion-db:
-        condition: service_healthy
       broker:
         condition: service_started
       redis:
@@ -166,38 +202,18 @@ services:
       - "5003:80"
     restart: on-failure
 
-  anonimizacion-db:
-    image: postgres:latest
-    container_name: anonimizacion-db
-    environment:
-      - POSTGRES_DB=SaludTechAnonimizacionDb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5436:5432"
-    networks:
-      - pulsar
-    volumes:
-      - ./data/anonimizacion-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   anonimizacion-service:
     build:
       context: .
       dockerfile: Ingestion/Ingestion.Aplicacion.Anonimizacion/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/anonimizacion-service:latest
     container_name: anonimizacion-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=anonimizacion-db;Database=SaludTechAnonimizacionDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=10.114.240.3;Database=SaludTechAnonimizacionDb;Username=postgres;Password=postgres;SslMode=Disable
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
     depends_on:
-      anonimizacion-db:
-        condition: service_healthy
       broker:
         condition: service_started
     networks:
@@ -206,38 +222,18 @@ services:
       - "5004:80"
     restart: on-failure
 
-  metadata-db:
-    image: postgres:latest
-    container_name: metadata-db
-    environment:
-      - POSTGRES_DB=SaludTechMetadataDb
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5437:5432"
-    networks:
-      - pulsar
-    volumes:
-      - ./data/metadata-db:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   metadata-service:
     build:
       context: .
       dockerfile: Ingestion/Ingestion.Aplicacion.Metadata/Dockerfile
+    image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/metadata-service:latest
     container_name: metadata-service
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ConnectionStrings__DefaultConnection=Host=metadata-db;Database=SaludTechMetadataDb;Username=postgres;Password=postgres
+      - ConnectionStrings__DefaultConnection=Host=10.114.240.3;Database=SaludTechMetadataDb;Username=postgres;Password=postgres;SslMode=Disable
       - MessageBroker__Host=broker
       - MessageBroker__Port=6650
     depends_on:
-      metadata-db:
-        condition: service_healthy
       broker:
         condition: service_started
     networks:
@@ -267,6 +263,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 30
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
 
   # Init cluster metadata
   pulsar-init:
@@ -285,6 +285,8 @@ services:
     depends_on:
       zookeeper:
         condition: service_healthy
+    ports:
+      - "1234:1234"
 
   # Start bookie
   bookie:
@@ -307,6 +309,9 @@ services:
     volumes:
       - ./data/bookkeeper:/pulsar/data/bookkeeper
     command: bash -c "bin/apply-config-from-env.py conf/bookkeeper.conf && exec bin/pulsar bookie"
+    ports:
+      - "3181:3181"
+      - "4181:4181"
 
   # Start broker
   broker:

@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert -f docker-compose.yml
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: metadata-service
+  name: metadata-service
+spec:
+  ports:
+    - name: "5005"
+      port: 5005
+      targetPort: 80
+  selector:
+    io.kompose.service: metadata-service

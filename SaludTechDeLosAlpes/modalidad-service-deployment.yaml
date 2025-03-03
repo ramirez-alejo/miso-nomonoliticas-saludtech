@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: modalidad-service
+  name: modalidad-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: modalidad-service
+  template:
+    metadata:
+      labels:
+        io.kompose.service: modalidad-service
+    spec:
+      containers:
+        - env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: Development
+            - name: ConnectionStrings__DefaultConnection
+              value: Host=10.114.240.3;Database=SaludTechModalidadDb;Username=postgres;Password=postgres;SslMode=Disable
+            - name: MessageBroker__Host
+              value: broker
+            - name: MessageBroker__Port
+              value: "6650"
+            - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
+              value: Ignore
+          image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/modalidad-service:latest
+          name: modalidad-service
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "200m"
+          securityContext:
+            runAsUser: 0
+            capabilities:
+              add: ["NET_BIND_SERVICE"]
+          ports:
+            - containerPort: 80
+              protocol: TCP
+      restartPolicy: Always

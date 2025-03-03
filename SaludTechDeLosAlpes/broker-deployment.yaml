@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: broker
+  name: broker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: broker
+  template:
+    metadata:
+      labels:
+        io.kompose.service: broker
+    spec:
+      containers:
+        - args:
+            - bash
+            - -c
+            - bin/apply-config-from-env.py conf/broker.conf && exec bin/pulsar broker
+          env:
+            - name: PULSAR_MEM
+              value: -Xms512m -Xmx512m -XX:MaxDirectMemorySize=256m
+            - name: advertisedAddress
+              value: broker
+            - name: advertisedListeners
+              value: internal:pulsar://broker:6650
+            - name: clusterName
+              value: cluster-a
+            - name: managedLedgerDefaultAckQuorum
+              value: "1"
+            - name: managedLedgerDefaultEnsembleSize
+              value: "1"
+            - name: managedLedgerDefaultWriteQuorum
+              value: "1"
+            - name: metadataStoreUrl
+              value: zk:zookeeper:2181
+            - name: zookeeperServers
+              value: zookeeper:2181
+          image: apachepulsar/pulsar:latest
+          name: broker
+          resources:
+            requests:
+              memory: "1Gi"
+              cpu: "500m"
+            limits:
+              memory: "1.5Gi"
+              cpu: "1000m"
+          securityContext:
+            runAsUser: 0
+          ports:
+            - containerPort: 6650
+              protocol: TCP
+            - containerPort: 8080
+              protocol: TCP
+      hostname: broker
+      restartPolicy: Always
