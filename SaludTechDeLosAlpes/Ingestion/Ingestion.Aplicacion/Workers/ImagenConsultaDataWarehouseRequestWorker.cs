@@ -38,7 +38,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DATAWAREHOUSE_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaDataWarehouseRequestEvent>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenConsultaDataWarehouseRequestEvent>(
                 TOPIC_DATAWAREHOUSE_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 
@@ -71,7 +71,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             var imagenes = await _imagenRepository.GetByIdsAsync(request.ImagenIds, cancellationToken);
 
             // Publish response event
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
+            await _messageProducer.SendWithSchemaAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
             {
                 SagaId = request.SagaId,
                 Imagenes = imagenes,
@@ -86,7 +86,7 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
             _logger.LogError(ex, "Error in data warehouse request for saga {SagaId}: {Message}", request.SagaId, ex.Message);
             
             // Publish failure event
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
+            await _messageProducer.SendWithSchemaAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
             {
                 SagaId = request.SagaId,
                 Imagenes = Array.Empty<Imagen>(),

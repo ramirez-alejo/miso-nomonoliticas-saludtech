@@ -35,7 +35,7 @@ public class ImagenSubscriptionWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_IMAGEN_MEDICA, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<Imagen>(
+            await _messageConsumer.StartWithSchemaAsync<Imagen>(
                 TOPIC_IMAGEN_MEDICA,
                 SUBSCRIPTION_NAME,
                 imagenHandler.HandleImagenCreada

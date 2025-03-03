@@ -61,7 +61,7 @@ public class ImagenIngestionSagaOrchestrator
             UbicacionImagen = imagenDto.Url,
         };
 
-        await _messageProducer.SendJsonAsync(TOPIC_ANONIMIZAR, anonimizarCommand);
+        await _messageProducer.SendWithSchemaAsync(TOPIC_ANONIMIZAR, anonimizarCommand);
         _logger.LogInformation("Published anonimizar command for saga {SagaId}", sagaId);
 
         // Create and publish GenerarMetadata command
@@ -72,7 +72,7 @@ public class ImagenIngestionSagaOrchestrator
             Version = "1.0.0",
         };
 
-        await _messageProducer.SendJsonAsync(TOPIC_METADATA, generarMetadataCommand);
+        await _messageProducer.SendWithSchemaAsync(TOPIC_METADATA, generarMetadataCommand);
         _logger.LogInformation("Published generar metadata command for saga {SagaId}", sagaId);
 
         return sagaId;
@@ -158,7 +158,7 @@ public class ImagenIngestionSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event
-        await _messageProducer.SendJsonAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
+        await _messageProducer.SendWithSchemaAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
         {
             SagaId = state.SagaId,
             ImagenId = state.ImagenId,
@@ -176,7 +176,7 @@ public class ImagenIngestionSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event with failure
-        await _messageProducer.SendJsonAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
+        await _messageProducer.SendWithSchemaAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
         {
             SagaId = state.SagaId,
             ImagenId = state.ImagenId,

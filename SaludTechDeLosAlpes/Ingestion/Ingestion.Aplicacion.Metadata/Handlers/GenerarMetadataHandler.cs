@@ -74,7 +74,7 @@ public class GenerarMetadataHandler{
 			Success = true
 		};
 		
-		await _messageProducer.SendJsonAsync(TOPIC_METADATA_GENERADA, evento);
+		await _messageProducer.SendWithSchemaAsync(TOPIC_METADATA_GENERADA, evento);
 		_logger.LogInformation("Published success metadata generada event for saga {SagaId}", sagaId);
 	}
 	
@@ -90,7 +90,7 @@ public class GenerarMetadataHandler{
 			ErrorMessage = errorMessage
 		};
 		
-		await _messageProducer.SendJsonAsync(TOPIC_METADATA_GENERADA, evento);
+		await _messageProducer.SendWithSchemaAsync(TOPIC_METADATA_GENERADA, evento);
 		_logger.LogInformation("Published failure metadata generada event for saga {SagaId}: {ErrorMessage}", 
 			sagaId, errorMessage);
 	}

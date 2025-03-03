@@ -38,7 +38,7 @@ public class ImagenConsultaDemografiaRequestWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DEMOGRAFIA_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaDemografiaRequestCommand>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenConsultaDemografiaRequestCommand>(
                 TOPIC_DEMOGRAFIA_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 
@@ -59,7 +59,7 @@ public class ImagenConsultaDemografiaRequestWorker : BackgroundService
                         var result = await mediator.Send(query, stoppingToken);
                         
                         // Publish the response event
-                        await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA_RESPONSE, new ImagenConsultaDemografiaResponseEvent
+                        await _messageProducer.SendWithSchemaAsync(TOPIC_DEMOGRAFIA_RESPONSE, new ImagenConsultaDemografiaResponseEvent
                         {
                             SagaId = request.SagaId,
                             ImagenIds = result.ImagenIds.ToArray(),
@@ -74,7 +74,7 @@ public class ImagenConsultaDemografiaRequestWorker : BackgroundService
                         _logger.LogError(ex, "Error processing demografia request for saga {SagaId}", request.SagaId);
                         
                         // Publish failure response
-                        await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA_RESPONSE, new ImagenConsultaDemografiaResponseEvent
+                        await _messageProducer.SendWithSchemaAsync(TOPIC_DEMOGRAFIA_RESPONSE, new ImagenConsultaDemografiaResponseEvent
                         {
                             SagaId = request.SagaId,
                             ImagenIds = Array.Empty<Guid>(),

@@ -75,7 +75,7 @@ namespace Ingestion.Aplicacion.Anonimizacion.Comandos
                 Success = true
             };
             
-            await _messageProducer.SendJsonAsync(TOPIC_ANONIMIZADA, evento);
+            await _messageProducer.SendWithSchemaAsync(TOPIC_ANONIMIZADA, evento);
             _logger.LogInformation("Published success anonimizada event for saga {SagaId}", sagaId);
         }
         
@@ -90,7 +90,7 @@ namespace Ingestion.Aplicacion.Anonimizacion.Comandos
                 ErrorMessage = errorMessage
             };
             
-            await _messageProducer.SendJsonAsync(TOPIC_ANONIMIZADA, evento);
+            await _messageProducer.SendWithSchemaAsync(TOPIC_ANONIMIZADA, evento);
             _logger.LogInformation("Published failure anonimizada event for saga {SagaId}: {ErrorMessage}", 
                 sagaId, errorMessage);
         }

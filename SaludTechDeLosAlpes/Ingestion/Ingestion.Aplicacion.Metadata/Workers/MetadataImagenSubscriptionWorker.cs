@@ -31,7 +31,7 @@ public class MetadataImagenSubscriptionWorker: BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}", 
                 TOPIC_IMAGENT_METADATA, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<Ingestion.Dominio.Comandos.GenerarMetadata>(
+            await _messageConsumer.StartWithSchemaAsync<Ingestion.Dominio.Comandos.GenerarMetadata>(
                 TOPIC_IMAGENT_METADATA,
                 SUBSCRIPTION_NAME,
                 handler.HandleGenerarMetadata

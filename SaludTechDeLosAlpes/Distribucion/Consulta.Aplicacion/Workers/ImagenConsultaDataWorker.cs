@@ -35,7 +35,7 @@ public class ImagenConsultaDataWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DATA_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaDataRequestCommand>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenConsultaDataRequestCommand>(
                 TOPIC_DATA_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 

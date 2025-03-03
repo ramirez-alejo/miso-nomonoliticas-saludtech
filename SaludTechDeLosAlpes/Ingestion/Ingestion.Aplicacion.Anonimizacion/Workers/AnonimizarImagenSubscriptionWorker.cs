@@ -32,7 +32,7 @@ public class AnonimizarImagenSubscriptionWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}", 
                 TOPIC_IMAGEN_ANONIMIZAR, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<Ingestion.Dominio.Comandos.Anonimizar>(
+            await _messageConsumer.StartWithSchemaAsync<Ingestion.Dominio.Comandos.Anonimizar>(
                 TOPIC_IMAGEN_ANONIMIZAR,
                 SUBSCRIPTION_NAME,
                 anonimizarHandler.HandleAnonimizar
