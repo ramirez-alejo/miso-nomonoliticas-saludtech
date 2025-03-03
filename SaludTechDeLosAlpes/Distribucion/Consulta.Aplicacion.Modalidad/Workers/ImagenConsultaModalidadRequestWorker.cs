@@ -36,7 +36,7 @@ public class ImagenConsultaModalidadRequestWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_MODALIDAD_REQUEST, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenConsultaModalidadRequestCommand>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenConsultaModalidadRequestCommand>(
                 TOPIC_MODALIDAD_REQUEST,
                 SUBSCRIPTION_NAME,
                 async request => 
@@ -56,7 +56,7 @@ public class ImagenConsultaModalidadRequestWorker : BackgroundService
                         var result = await mediator.Send(query, stoppingToken);
                         
                         // Publish the response event
-                        await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD_RESPONSE, new ImagenConsultaModalidadResponseEvent
+                        await _messageProducer.SendWithSchemaAsync(TOPIC_MODALIDAD_RESPONSE, new ImagenConsultaModalidadResponseEvent
                         {
                             SagaId = request.SagaId,
                             ImagenIds = result.ImagenId.ToArray(),
@@ -71,7 +71,7 @@ public class ImagenConsultaModalidadRequestWorker : BackgroundService
                         _logger.LogError(ex, "Error processing modalidad request for saga {SagaId}", request.SagaId);
                         
                         // Publish failure response
-                        await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD_RESPONSE, new ImagenConsultaModalidadResponseEvent
+                        await _messageProducer.SendWithSchemaAsync(TOPIC_MODALIDAD_RESPONSE, new ImagenConsultaModalidadResponseEvent
                         {
                             SagaId = request.SagaId,
                             ImagenIds = Array.Empty<Guid>(),

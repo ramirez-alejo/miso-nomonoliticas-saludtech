@@ -42,7 +42,7 @@ public class ImagenCreadaHandler
                 Etnicidad = imagen.Paciente?.Demografia?.Etnicidad ?? "No especificado",
                 FechaCreacion = DateTime.UtcNow
             };
-            await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA, demografiaEvent);
+            await _messageProducer.SendWithSchemaAsync(TOPIC_DEMOGRAFIA, demografiaEvent);
             _logger.LogInformation("Evento deDemografia publicado para la Imagen con Id {ImagenId}", imagen.Id);
             _logger.LogInformation("Detalle del evento: {@Evento}", demografiaEvent);
 
@@ -56,7 +56,7 @@ public class ImagenCreadaHandler
                 RegionDescripcion = imagen.TipoImagen?.RegionAnatomica?.Descripcion ?? "No especificado",
                 FechaCreacion = DateTime.UtcNow
             };
-            await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD, modalidadEvent);
+            await _messageProducer.SendWithSchemaAsync(TOPIC_MODALIDAD, modalidadEvent);
             _logger.LogInformation("Evento de Modalidad publicado con los datos: {@Evento}", modalidadEvent);
         }
         catch (Exception ex)

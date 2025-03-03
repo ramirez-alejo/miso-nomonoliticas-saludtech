@@ -35,7 +35,7 @@ public class ImagenModalidadSubscriptionWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}", 
                 TOPIC_IMAGEN_MODALIDAD, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenModalidadEvent>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenModalidadEvent>(
                 TOPIC_IMAGEN_MODALIDAD,
                 SUBSCRIPTION_NAME,
                 imagenHandler.HandleImagenModalidad

@@ -49,13 +49,13 @@ public class ImagenConsultaSagaOrchestrator
         _logger.LogInformation("Started new saga with ID {SagaId}", sagaId);
 
         // Publish events to start the process
-        await _messageProducer.SendJsonAsync(TOPIC_DEMOGRAFIA_REQUEST, new ImagenConsultaDemografiaRequestCommand
+        await _messageProducer.SendWithSchemaAsync(TOPIC_DEMOGRAFIA_REQUEST, new ImagenConsultaDemografiaRequestCommand
         {
             SagaId = sagaId,
             Filter = request.Demografia
         });
 
-        await _messageProducer.SendJsonAsync(TOPIC_MODALIDAD_REQUEST, new ImagenConsultaModalidadRequestCommand
+        await _messageProducer.SendWithSchemaAsync(TOPIC_MODALIDAD_REQUEST, new ImagenConsultaModalidadRequestCommand
         {
             SagaId = sagaId,
             Filter = request.TipoImagen
@@ -135,7 +135,7 @@ public class ImagenConsultaSagaOrchestrator
             }
 
             // Proceed to data fetch step
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_REQUEST, new ImagenConsultaDataRequestCommand
+            await _messageProducer.SendWithSchemaAsync(TOPIC_DATA_REQUEST, new ImagenConsultaDataRequestCommand
             {
                 SagaId = state.SagaId,
                 ImagenIds = intersectedIds
@@ -177,7 +177,7 @@ public class ImagenConsultaSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event
-        await _messageProducer.SendJsonAsync(TOPIC_CONSULTA_COMPLETED, new ImagenConsultaCompletedEvent
+        await _messageProducer.SendWithSchemaAsync(TOPIC_CONSULTA_COMPLETED, new ImagenConsultaCompletedEvent
         {
             SagaId = state.SagaId,
             Imagenes = imagenes,
@@ -195,7 +195,7 @@ public class ImagenConsultaSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event with failure
-        await _messageProducer.SendJsonAsync(TOPIC_CONSULTA_COMPLETED, new ImagenConsultaCompletedEvent
+        await _messageProducer.SendWithSchemaAsync(TOPIC_CONSULTA_COMPLETED, new ImagenConsultaCompletedEvent
         {
             SagaId = state.SagaId,
             Imagenes = Array.Empty<ImagenMedica>(),
@@ -233,7 +233,7 @@ public class ImagenConsultaSagaOrchestrator
             };
 
             // Publish the event to the data warehouse service
-            await _messageProducer.SendJsonAsync("imagen-consulta-datawarehouse-request", dataWarehouseRequest);
+            await _messageProducer.SendWithSchemaAsync("imagen-consulta-datawarehouse-request", dataWarehouseRequest);
             _logger.LogInformation("Published data warehouse request for saga {SagaId}", sagaId);
         }
         catch (Exception ex)
@@ -241,7 +241,7 @@ public class ImagenConsultaSagaOrchestrator
             _logger.LogError(ex, "Error publishing data warehouse request for saga {SagaId}", sagaId);
             
             // Publish failure event
-            await _messageProducer.SendJsonAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
+            await _messageProducer.SendWithSchemaAsync(TOPIC_DATA_RESPONSE, new ImagenConsultaDataResponseEvent
             {
                 SagaId = sagaId,
                 Imagenes = Array.Empty<ImagenMedica>(),

@@ -36,7 +36,7 @@ public class ImagenDemograficaSubscriptionWorker : BackgroundService
             _logger.LogInformation("Starting subscription to {Topic} with subscription {Subscription}",
                 TOPIC_DEMOGRAFIA, SUBSCRIPTION_NAME);
 
-            await _messageConsumer.StartAsync<ImagenDemografiaEvent>(
+            await _messageConsumer.StartWithSchemaAsync<ImagenDemografiaEvent>(
                 TOPIC_DEMOGRAFIA,
                 SUBSCRIPTION_NAME,
                 imagenHandler.HandleImagenDemografia
