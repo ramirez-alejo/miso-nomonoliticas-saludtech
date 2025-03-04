@@ -72,6 +72,23 @@ services:
       - ./data/redis:/data
 
   # Services
+  bff_web:
+    build:
+      context: .
+      dockerfile: bff/Dockerfile
+    container_name: bff_web
+    depends_on:
+      broker:
+          condition: service_started
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MessageBroker__Host=broker
+      - MessageBroker__Port=6650
+    networks:
+      - pulsar
+    ports:
+      - "8003:8003"
+
   modalidad-service:
     build:
       context: .
