@@ -1,0 +1,28 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package ambienteVirtual {
+	package "'SeguridadAmbiente' Aggregate" <<Rectangle>> {
+		class ControlAcceso <<(E,DarkSeaGreen) Entity>> {
+			String tipoAmbiente
+			String politicaSeguridad
+			String nivelAislamiento
+			String regionCloud
+		}
+		class Auditoria <<(E,DarkSeaGreen) Entity>> {
+			String tipoOperacion
+			Date timestamp
+			String usuario
+			String resultado
+		}
+		class ConfiguracionRed <<(E,DarkSeaGreen) Entity>> {
+			String vpcConfig
+			String firewallRules
+			String encryptionKeys
+		}
+	}
+}
+
+
+@enduml

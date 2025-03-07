@@ -1,0 +1,21 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'AmbienteVirtual' Core Domain" <<Rectangle>> {
+	class Ambiente <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String clienteId
+		String tipo
+		String estado
+		Date fechaCreacion
+	}
+}
+legend left
+  This subdomain is part of the 'Distribucion' domain.
+
+  Provisionar y gestionar ambientes cloud dedicados para clientes Pro y Enterprise
+end legend
+
+
+@enduml

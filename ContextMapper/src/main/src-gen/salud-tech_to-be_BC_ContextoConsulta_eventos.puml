@@ -1,0 +1,35 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package eventos {
+	package "'EventosConsulta' Aggregate" <<Rectangle>> {
+		class ImagenConsultaDemografiaResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<String> imagenIds
+		}
+		class ImagenConsultaModalidadResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<String> imagenIds
+		}
+		class ImagenConsultaDataResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<ImagenMedica> imagenes
+		}
+		class ImagenConsultaCompletedEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<ImagenMedica> imagenes
+		}
+	}
+}
+
+
+@enduml

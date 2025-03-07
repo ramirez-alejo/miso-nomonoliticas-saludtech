@@ -1,0 +1,22 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'GestionProveedores' Core Domain" <<Rectangle>> {
+	class ProveedorSalud <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String nombre
+		String pais
+		String tipo
+		String estado
+		Date fechaIntegracion
+	}
+}
+legend left
+  This subdomain is part of the 'RecaudacionImagenes' domain.
+
+  Gestionar relaciones con centros de salud y laboratorios para la obtención de datos médicos
+end legend
+
+
+@enduml

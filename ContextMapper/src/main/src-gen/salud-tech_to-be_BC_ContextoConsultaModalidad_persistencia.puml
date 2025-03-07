@@ -1,0 +1,27 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package persistencia {
+	package "'ModalidadAggregate' Aggregate" <<Rectangle>> {
+		class ImagenModalidad <<(E,DarkSeaGreen) Entity>> {
+			String id
+			String imagenId
+			Modalidad modalidad
+			RegionAnatomica regionAnatomica
+		}
+	}
+	class Modalidad <<(E,DarkSeaGreen) Entity>> {
+		String nombre
+		String descripcion
+	}
+	class RegionAnatomica <<(E,DarkSeaGreen) Entity>> {
+		String nombre
+		String descripcion
+	}
+}
+ImagenModalidad --> Modalidad : modalidad
+ImagenModalidad --> RegionAnatomica : regionAnatomica
+
+
+@enduml

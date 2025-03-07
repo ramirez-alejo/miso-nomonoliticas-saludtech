@@ -1,0 +1,40 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package seguridad {
+	package "'AccesoProveedor' Aggregate" <<Rectangle>> {
+		class Credenciales <<(E,DarkSeaGreen) Entity>> {
+			String usuario
+			String tipoAutenticacion
+			String estado
+			Date ultimoAcceso
+		}
+		class PermisosCarga <<(E,DarkSeaGreen) Entity>> {
+			String tipoPermiso
+			String alcance
+			Date expiracion
+		}
+	}
+}
+legend left
+  This bounded context implements the subdomain 'GestionProveedores', which contains the following entities:
+   - ProveedorSalud
+  This bounded context implements the subdomain 'Ingestion', which contains the following entities:
+   - Imagen
+   - TipoImagen
+   - Modalidad
+   - RegionAnatomica
+   - Patologia
+   - AtributosImagen
+   - ContextoProcesal
+   - Metadatos
+   - Paciente
+   - Demografia
+   - Historial
+   - EntornoClinico
+   - Sintoma
+end legend
+
+
+@enduml

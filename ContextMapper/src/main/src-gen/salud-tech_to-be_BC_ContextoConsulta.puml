@@ -1,0 +1,90 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package sagas {
+	package "'ImagenConsultaSaga' Aggregate" <<Rectangle>> {
+		class ImagenConsultaSagaState <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			String status
+			Date createdAt
+			Date completedAt
+			String errorMessage
+			List<String> demografiaResults
+			List<String> modalidadResults
+			List<String> intersectedIds
+			List<ImagenMedica> finalResults
+			Demografia demografiaFilter
+			TipoImagen tipoImagenFilter
+		}
+	}
+}
+package comandos {
+	package "'ComandosConsulta' Aggregate" <<Rectangle>> {
+		class ImagenConsultaDemografiaRequestCommand <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			Demografia filter
+		}
+		class ImagenConsultaModalidadRequestCommand <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			TipoImagen filter
+		}
+		class ImagenConsultaDataRequestCommand <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			List<String> imagenIds
+		}
+		class TipoImagen <<(E,DarkSeaGreen) Entity>> {
+			Modalidad modalidad
+			RegionAnatomica regionAnatomica
+			Patologia patologia
+		}
+		class Demografia <<(E,DarkSeaGreen) Entity>> {
+			String grupoEdad
+			String sexo
+			String etnicidad
+		}
+	}
+}
+package eventos {
+	package "'EventosConsulta' Aggregate" <<Rectangle>> {
+		class ImagenConsultaDemografiaResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<String> imagenIds
+		}
+		class ImagenConsultaModalidadResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<String> imagenIds
+		}
+		class ImagenConsultaDataResponseEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<ImagenMedica> imagenes
+		}
+		class ImagenConsultaCompletedEvent <<(E,DarkSeaGreen) Entity>> {
+			String sagaId
+			boolean success
+			String errorMessage
+			List<ImagenMedica> imagenes
+		}
+	}
+}
+ImagenConsultaSagaState --> Demografia : demografiaFilter
+ImagenConsultaSagaState --> TipoImagen : tipoImagenFilter
+ImagenConsultaModalidadRequestCommand --> TipoImagen : filter
+ImagenConsultaDemografiaRequestCommand --> Demografia : filter
+legend left
+  This bounded context implements the subdomain 'Consulta', which contains the following entities:
+   - ImagenMedica
+   - ImagenDemografia
+   - ImagenModalidad
+   - ImagenMedicaConsultaConFiltros
+   - ImagenConsultaSagaState
+end legend
+
+
+@enduml

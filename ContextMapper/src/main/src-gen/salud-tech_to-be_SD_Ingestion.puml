@@ -1,0 +1,87 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Ingestion' Core Domain" <<Rectangle>> {
+	class Imagen <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String version
+		String url1
+		String imagenProcesadaPath
+		TipoImagen tipoImagen
+		AtributosImagen atributosImagen
+		ContextoProcesal contextoProcesal
+		Metadatos metadatos
+		Paciente paciente
+	}
+	class TipoImagen <<(E,DarkSeaGreen) Entity>> {
+		Modalidad modalidad
+		RegionAnatomica regionAnatomica
+		Patologia patologia
+	}
+	class Modalidad <<(E,DarkSeaGreen) Entity>> {
+		String nombre
+		String descripcion
+	}
+	class RegionAnatomica <<(E,DarkSeaGreen) Entity>> {
+		String nombre
+		String descripcion
+	}
+	class Patologia <<(E,DarkSeaGreen) Entity>> {
+		String descripcion
+	}
+	class AtributosImagen <<(E,DarkSeaGreen) Entity>> {
+		String resolucion
+		String contraste
+		boolean es3D
+		String faseEscaner
+	}
+	class ContextoProcesal <<(E,DarkSeaGreen) Entity>> {
+		String etapa
+	}
+	class Metadatos <<(E,DarkSeaGreen) Entity>> {
+		List<Sintoma> sintomas
+		List<String> tags
+		EntornoClinico entornoClinico
+	}
+	class Paciente <<(E,DarkSeaGreen) Entity>> {
+		String tokenAnonimo
+		Demografia demografia
+		Historial historial
+	}
+	class Demografia <<(E,DarkSeaGreen) Entity>> {
+		String grupoEdad
+		String sexo
+		String etnicidad
+	}
+	class Historial <<(E,DarkSeaGreen) Entity>> {
+		boolean fumador
+		boolean diabetico
+		List<String> condicionesPrevias
+	}
+	class EntornoClinico <<(E,DarkSeaGreen) Entity>> {
+		String tipoAmbiente
+	}
+	class Sintoma <<(E,DarkSeaGreen) Entity>> {
+		String descripcion
+	}
+}
+TipoImagen --> Patologia : patologia
+Imagen --> TipoImagen : tipoImagen
+Imagen --> ContextoProcesal : contextoProcesal
+TipoImagen --> RegionAnatomica : regionAnatomica
+Paciente --> Demografia : demografia
+Imagen --> Paciente : paciente
+Imagen --> Metadatos : metadatos
+Paciente --> Historial : historial
+TipoImagen --> Modalidad : modalidad
+Imagen --> AtributosImagen : atributosImagen
+Metadatos --> EntornoClinico : entornoClinico
+legend left
+  This subdomain is part of the 'RecaudacionImagenes' domain.
+
+  Gestionar la importación segura de datos desde infraestructuras on-premise a la nube
+end legend
+
+
+@enduml

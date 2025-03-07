@@ -1,0 +1,21 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'GestionClientes' Core Domain" <<Rectangle>> {
+	class Cliente <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String nombre
+		String tipo
+		Date fechaRegistro
+		String estado
+	}
+}
+legend left
+  This subdomain is part of the 'Distribucion' domain.
+
+  Administrar cuentas de cliente y niveles de servicio
+end legend
+
+
+@enduml

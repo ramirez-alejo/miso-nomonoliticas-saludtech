@@ -1,0 +1,31 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Metadata' Core Domain" <<Rectangle>> {
+	class Metadata <<(E,DarkSeaGreen) Entity>> {
+		String imagenId
+		String version
+		String resolucion
+		String contraste
+		boolean es3D
+		String faseEscaner
+		Date timestamp
+		List<String> tags
+		List<Sintoma> sintomas
+		TipoImagen tipoImagen
+		AtributosImagen atributosImagen
+		ContextoProcesal contextoProcesal
+		Demografia demografia
+		Historial historial
+		EntornoClinico entornoClinico
+	}
+}
+legend left
+  This subdomain is part of the 'RecaudacionImagenes' domain.
+
+  Extraer y gestionar metadatos de las imágenes médicas
+end legend
+
+
+@enduml

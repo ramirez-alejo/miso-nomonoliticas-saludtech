@@ -1,0 +1,23 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Anonimizacion' Core Domain" <<Rectangle>> {
+	class Anonimizar <<(E,DarkSeaGreen) Entity>> {
+		String imagenId
+		String version
+		String ubicacionImagen
+		String imagenProcesadaPath
+		String detalleAnonimizacion
+		TipoImagen tipoImagen
+		AtributosImagen atributosImagen
+	}
+}
+legend left
+  This subdomain is part of the 'RecaudacionImagenes' domain.
+
+  Garantizar la eliminación segura de información sensible en imágenes médicas
+end legend
+
+
+@enduml

@@ -1,0 +1,21 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'ProcesadorImagenes' Core Domain" <<Rectangle>> {
+	class Pipeline <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String tipo
+		String modalidad
+		String regionAnatomica
+		String version
+	}
+}
+legend left
+  This subdomain is part of the 'Procesamiento' domain.
+
+  Ejecutar pipelines especializados para diferentes tipos de imágenes médicas
+end legend
+
+
+@enduml
