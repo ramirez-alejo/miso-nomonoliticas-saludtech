@@ -19,6 +19,8 @@ public class ImagenIngestionSagaOrchestrator
     // Topic constants
     private const string TOPIC_ANONIMIZAR = "imagen-anonimizar";
     private const string TOPIC_METADATA = "metadata-imagen";
+    private const string TOPIC_ELIMINAR_ANONIMIZACION = "imagen-eliminar-anonimizacion";
+    private const string TOPIC_ELIMINAR_METADATA = "metadata-eliminar";
     private const string TOPIC_INGESTION_COMPLETED = "imagen-ingestion-completed";
 
     public ImagenIngestionSagaOrchestrator(
@@ -170,6 +172,10 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task HandleFailure(ImagenIngestionSagaState state, string errorMessage)
     {
+        // Execute compensation actions if needed
+        await ExecuteCompensationActions(state);
+
+        // Update state
         state.Status = "Failed";
         state.ErrorMessage = errorMessage;
         state.CompletedAt = DateTime.UtcNow;
@@ -185,5 +191,70 @@ public class ImagenIngestionSagaOrchestrator
         });
 
         _logger.LogError("Saga {SagaId} failed: {ErrorMessage}", state.SagaId, errorMessage);
+    }
+
+    private async Task ExecuteCompensationActions(ImagenIngestionSagaState state)
+    {
+        // Check which operations have completed and need compensation
+        if (state.AnonimizacionCompleted && !state.MetadataCompleted)
+        {
+            // If Anonimizar succeeded but GenerarMetadata failed, rollback Anonimizar data
+            await RollbackAnonimizacionData(state);
+        }
+        else if (!state.AnonimizacionCompleted && state.MetadataCompleted)
+        {
+            // If GenerarMetadata succeeded but Anonimizar failed, rollback Metadata data
+            await RollbackMetadataData(state);
+        }
+    }
+
+    private async Task RollbackAnonimizacionData(ImagenIngestionSagaState state)
+    {
+        try
+        {
+            _logger.LogInformation("Executing compensation action: Rolling back Anonimizacion data for saga {SagaId}", state.SagaId);
+            
+            // Create and publish EliminarAnonimizacion command
+            var eliminarAnonimizacionCommand = new EliminarAnonimizacion
+            {
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                Version = "1.0.0"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_ELIMINAR_ANONIMIZACION, eliminarAnonimizacionCommand);
+            
+            _logger.LogInformation("Published eliminar anonimizacion command for saga {SagaId}", state.SagaId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish eliminar anonimizacion command for saga {SagaId}: {ErrorMessage}", 
+                state.SagaId, ex.Message);
+        }
+    }
+
+    private async Task RollbackMetadataData(ImagenIngestionSagaState state)
+    {
+        try
+        {
+            _logger.LogInformation("Executing compensation action: Rolling back Metadata data for saga {SagaId}", state.SagaId);
+            
+            // Create and publish EliminarMetadata command
+            var eliminarMetadataCommand = new EliminarMetadata
+            {
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                Version = "1.0.0"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_ELIMINAR_METADATA, eliminarMetadataCommand);
+            
+            _logger.LogInformation("Published eliminar metadata command for saga {SagaId}", state.SagaId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to publish eliminar metadata command for saga {SagaId}: {ErrorMessage}", 
+                state.SagaId, ex.Message);
+        }
     }
 }

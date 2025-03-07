@@ -7,5 +7,7 @@ namespace Ingestion.Aplicacion.Anonimizacion.Persistencia.Repositorios
     {
         Task SaveAsync(Modelos.Anonimizar anonimizar,
             CancellationToken cancellationToken);
+            
+        Task DeleteAsync(Guid imagenId, CancellationToken cancellationToken);
     }
 }
