@@ -1,10 +1,9 @@
 {
 	"info": {
-		"_postman_id": "4bf7777e-2b62-4488-922a-f8a08d5fa5ec",
+		"_postman_id": "eb46c835-c6ef-470e-ba7c-173a18f45e1c",
 		"name": "SaludTechDeLosAlpes",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "4872632",
-		"_collection_link": "https://team-colombia.postman.co/workspace/Amazon-Ads~2c53b241-0668-4917-b054-59b87a573851/collection/4872632-4bf7777e-2b62-4488-922a-f8a08d5fa5ec?action=share&source=collection_link&creator=4872632"
+		"_exporter_id": "25532687"
 	},
 	"item": [
 		{
@@ -29,6 +28,37 @@
 					"path": [
 						"api",
 						"imagenes"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "bff",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"query\": \"mutation MyMutation { procesarIngestion(input: {Version: \\\"1.0\\\", ImagenId: \\\"123\\\", TipoImagen: {Modalidad: {Nombre: \\\"RM\\\", Descripcion: \\\"Resonancia\\\"}, RegionAnatomica: {Nombre: \\\"Cabeza\\\", Descripcion: \\\"Cráneo\\\"}, Patologia: {Descripcion: \\\"Fractura\\\"}}, AtributosImagen: {Resolucion: \\\"HD\\\", Contraste: \\\"Alto\\\", Es3D: true, FaseEscaner: \\\"Tardía\\\"}, ContextoProcesal: {Etapa: \\\"Diagnóstico\\\"}, Metadatos: {EntornoClinico: {TipoAmbiente: \\\"Hospital\\\"}, Sintomas: [{Descripcion: \\\"Dolor de cabeza\\\"}]} , Paciente: {Demografia: {GrupoEdad: \\\"Adulto\\\", Sexo: \\\"Masculino\\\", Etnicidad: \\\"Latino\\\"}, Historial: {Fumador: false, Diabetico: false, CondicionesPrevias: [\\\"Hipertensión\\\"]}, TokenAnonimo: \\\"xyz123\\\"}}) { codigo mensaje } }\"\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/graphql",
+					"protocol": "http",
+					"host": [
+						"127",
+						"0",
+						"0",
+						"1"
+					],
+					"port": "8000",
+					"path": [
+						"graphql"
 					]
 				}
 			},
