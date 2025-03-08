@@ -41,6 +41,7 @@ public class Metadata
 	        {
 	            if (!string.IsNullOrEmpty(TipoImagen.Modalidad.Nombre))
 	            {
+					if (TipoImagen.Modalidad.Nombre.Contains('$')) throw new Exception("Caracter invalido en Modalidad.Nombre");
 	                Tags["TipoImagen.Modalidad.Nombre"] = TipoImagen.Modalidad.Nombre;
 	            }
 	            if (!string.IsNullOrEmpty(TipoImagen.Modalidad.Descripcion))

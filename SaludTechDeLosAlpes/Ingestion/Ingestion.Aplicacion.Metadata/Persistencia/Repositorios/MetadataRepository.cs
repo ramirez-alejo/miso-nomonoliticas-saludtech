@@ -6,12 +6,14 @@ namespace Ingestion.Aplicacion.Metadata.Persistencia.Repositorios;
 public class MetadataRepository : IMetadataRepository
 {
 	private readonly MetadataDbContext _context;
-        public ILogger<MetadataRepository> _logger { get; }
+    public ILogger<MetadataRepository> _logger { get; }
+	
 	public MetadataRepository(MetadataDbContext context, ILogger<MetadataRepository> logger)
 	{
-            _logger = logger;
+        _logger = logger;
 		_context = context;
 	}
+	
 	//Upsert
 	public async Task UpsertMetadataGenerada(Modelos.Metadata modelo, CancellationToken cancellationToken)
 	{
@@ -41,6 +43,29 @@ public class MetadataRepository : IMetadataRepository
             throw;
         }
 	}
-
-
+	
+	public async Task DeleteMetadataGenerada(Guid imagenId, CancellationToken cancellationToken)
+	{
+		try
+        {
+            var entity = await _context.Imagenes
+                .FirstOrDefaultAsync(x => x.ImagenId == imagenId, cancellationToken);
+            
+            if (entity != null)
+            {
+                _context.Imagenes.Remove(entity);
+                await _context.SaveChangesAsync(cancellationToken);
+                _logger.LogInformation("Deleted metadata for imagen {ImagenId}", imagenId);
+            }
+            else
+            {
+                _logger.LogWarning("No metadata found for imagen {ImagenId} to delete", imagenId);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting metadata for imagen {ImagenId}", imagenId);
+            throw;
+        }
+	}
 }

@@ -280,4 +280,29 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
 
 		await context.SaveChangesAsync(cancellationToken);
 	}
+
+	public async Task DeleteAnonimizacionData(Guid imagenId, CancellationToken cancellationToken)
+	{
+		var imagenAnonimizada = await context.ImagenAnonimizadas
+			.FirstOrDefaultAsync(i => i.ImagenId == imagenId, cancellationToken);
+
+		if (imagenAnonimizada != null)
+		{
+			context.ImagenAnonimizadas.Remove(imagenAnonimizada);
+			await context.SaveChangesAsync(cancellationToken);
+		}
+	}
+
+	public async Task DeleteMetadataData(Guid imagenId, CancellationToken cancellationToken)
+	{
+		var metadatos = await context.MetadatosGenerados
+			.Where(m => m.ImagenId == imagenId)
+			.ToListAsync(cancellationToken);
+
+		if (metadatos.Any())
+		{
+			context.MetadatosGenerados.RemoveRange(metadatos);
+			await context.SaveChangesAsync(cancellationToken);
+		}
+	}
 }

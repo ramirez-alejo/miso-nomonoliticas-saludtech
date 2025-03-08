@@ -51,7 +51,9 @@ builder.Services.AddScoped<IAnonimizarRepository, AnonimizarRepository>();
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
 builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<AnonimizarHandler>();
+builder.Services.AddScoped<EliminarAnonimizacionHandler>();
 builder.Services.AddHostedService<AnonimizarImagenSubscriptionWorker>();
+builder.Services.AddHostedService<EliminarAnonimizacionSubscriptionWorker>();
 
 // Add mediator
 builder.Services.AddMediator(options =>

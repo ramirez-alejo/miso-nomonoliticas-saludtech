@@ -16,4 +16,8 @@ public interface IImagenRepository
     Task<Imagen[]> GetByIdsAsync(Guid[] ids, CancellationToken cancellationToken);
     Task UpsertMetadataGenerada(Guid imagenId, Dictionary<string, string> tags, CancellationToken cancellationToken);
     Task UpsertImagenAnonimizada(Guid imagenId, string ubicacionImagenProcesada, CancellationToken cancellationToken);
+    
+    // Compensation methods for saga
+    Task DeleteAnonimizacionData(Guid imagenId, CancellationToken cancellationToken);
+    Task DeleteMetadataData(Guid imagenId, CancellationToken cancellationToken);
 }
