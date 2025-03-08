@@ -5,9 +5,9 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
 ## Integrantes
 
 * Augusto Romero
-* Juan David Orduz
 * Camilo Barreto
 * Alejandro Ramirez
+* Juan David Orduz
 
 ## Documentación
 
@@ -15,6 +15,7 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
 * [Arquitectura (Entrega 2)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-2)
 * [Escenarios de Calidad (Entrega 3)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-3)
 * [Implementación (Entrega 4)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-4)
+* [Experimentación (Entrega 5)](https://github.com/ramirez-alejo/miso-nomonoliticas-saludtech/wiki/Entrega-5)
 
 
 ### Componentes
@@ -51,6 +52,11 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
    - API sincrónica (considerado asincrónico con sagas para escenarios reales, implementado sincrónicamente para simplificar esta prueba de concepto)
    - Obtiene agregación completa usando IDs de los filtros
 
+7. **BBF Ingestion**
+   - Interfaz para interactuar con el servicio de Ingestión
+   - Permite crear eventos de dominio
+   - Permite consultar el estado de las sagas de ingestión
+
 ### Configuración del Ambiente
 
 #### Prerrequisitos
@@ -77,13 +83,10 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
    - Importe la colección desde: `SaludTechDeLosAlpes/postman/SaludTechDeLosAlpes.postman_collection.json`
    - Ajuste las variables de entorno de ser necesario para apuntar a los servicios locales
 
-3. Cargue los datos:
-   - Use el endpoint `CrearImagen Saga` en Postman
+3. Ejecución de Pruebas:
    - Use el archivo descargado como fuente de datos
-
-### Ejecución de Pruebas
-
-- Ejecute un llamado a `ConsultaUsandoFiltros Saga` en Postman
-- Verifique la respuesta y copie el id de la saga generada
-- Ejecute un llamado a `Consultar Saga Ingestion` en Postman con el id de la saga
-- Verifique la respuesta y el estado de la saga
+   - Use el endpoint `CrearImagen BFF` en Postman
+   - Verifique la respuesta y copie el correlation id generado
+   - Use el endpoint `Consultar BFF Ingestion` en Postman con el correlation id
+   - Verifique la respuesta y el estado de la saga
+   
