@@ -1,0 +1,21 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Etiquetado' Core Domain" <<Rectangle>> {
+	class Metadatos <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String grupoDemografico
+		String entornoClinico
+		String fase
+		String condicion
+	}
+}
+legend left
+  This subdomain is part of the 'Procesamiento' domain.
+
+  Extraer y gestionar metadatos y etiquetas de las imágenes médicas
+end legend
+
+
+@enduml

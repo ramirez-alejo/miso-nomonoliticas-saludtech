@@ -1,0 +1,41 @@
+@startuml
+
+skinparam componentStyle uml2
+
+component [ContextoIngestion]
+component [ContextoProcesamiento]
+component [ContextoConsulta]
+component [ContextoDistribucion]
+component [ContextoSeguridad]
+
+interface "Upstream-Downstream" as ContextoIngestion_to_ContextoSeguridad
+[ContextoSeguridad] --> ContextoIngestion_to_ContextoSeguridad
+ContextoIngestion_to_ContextoSeguridad <.. [ContextoIngestion] : consume
+
+interface "Upstream-Downstream" as ContextoProcesamiento_to_ContextoSeguridad
+[ContextoSeguridad] --> ContextoProcesamiento_to_ContextoSeguridad
+ContextoProcesamiento_to_ContextoSeguridad <.. [ContextoProcesamiento] : consume
+
+interface "Upstream-Downstream" as ContextoConsulta_to_ContextoSeguridad
+[ContextoSeguridad] --> ContextoConsulta_to_ContextoSeguridad
+ContextoConsulta_to_ContextoSeguridad <.. [ContextoConsulta] : consume
+
+interface "Upstream-Downstream" as ContextoDistribucion_to_ContextoSeguridad
+[ContextoSeguridad] --> ContextoDistribucion_to_ContextoSeguridad
+ContextoDistribucion_to_ContextoSeguridad <.. [ContextoDistribucion] : consume
+
+interface "Upstream-Downstream" as ContextoProcesamiento_to_ContextoIngestion
+[ContextoIngestion] --> ContextoProcesamiento_to_ContextoIngestion
+ContextoProcesamiento_to_ContextoIngestion <.. [ContextoProcesamiento] : use via ANTICORRUPTION_LAYER
+
+interface "Upstream-Downstream" as ContextoConsulta_to_ContextoProcesamiento
+[ContextoProcesamiento] --> ContextoConsulta_to_ContextoProcesamiento
+ContextoConsulta_to_ContextoProcesamiento <.. [ContextoConsulta] : use via ANTICORRUPTION_LAYER
+
+interface "Upstream-Downstream" as ContextoDistribucion_to_ContextoIngestion
+[ContextoIngestion] --> ContextoDistribucion_to_ContextoIngestion
+ContextoDistribucion_to_ContextoIngestion <.. [ContextoDistribucion] : use via ANTICORRUPTION_LAYER
+
+
+
+@enduml

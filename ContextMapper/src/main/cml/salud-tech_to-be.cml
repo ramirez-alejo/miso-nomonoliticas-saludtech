@@ -6,7 +6,7 @@ Domain RecaudacionImagenes {
         domainVisionStatement = "Gestionar relaciones con centros de salud y laboratorios para la obtención de datos médicos"
 
         Entity ProveedorSalud {
-            Long id
+            String id
             String nombre
             String pais
             String tipo // hospital, clínica, laboratorio
@@ -19,13 +19,79 @@ Domain RecaudacionImagenes {
         type = CORE_DOMAIN
         domainVisionStatement = "Gestionar la importación segura de datos desde infraestructuras on-premise a la nube"
 
-        Entity TrabajoImportacion {
-            Long id
-            Long proveedorId
-            String estado
-            String fuenteDatos // Google Drive, Dropbox, Data Center
-            Date fechaInicio
-            Date fechaFinalizacion
+        Entity Imagen {
+            String id
+            String version
+            String url
+            String imagenProcesadaPath
+            - TipoImagen tipoImagen
+            - AtributosImagen atributosImagen
+            - ContextoProcesal contextoProcesal
+            - Metadatos metadatos
+            - Paciente paciente
+        }
+
+        Entity TipoImagen {
+            - Modalidad modalidad
+            - RegionAnatomica regionAnatomica
+            - Patologia patologia
+        }
+
+        Entity Modalidad {
+            String nombre
+            String descripcion
+        }
+
+        Entity RegionAnatomica {
+            String nombre
+            String descripcion
+        }
+
+        Entity Patologia {
+            String descripcion
+        }
+
+        Entity AtributosImagen {
+            String resolucion
+            String contraste
+            boolean es3D
+            String faseEscaner
+        }
+
+        Entity ContextoProcesal {
+            String etapa
+        }
+
+        Entity Metadatos {
+            - EntornoClinico entornoClinico
+            List<Sintoma> sintomas
+            Map<String, String> tags
+        }
+
+        Entity Paciente {
+            - Demografia demografia
+            - Historial historial
+            String tokenAnonimo
+        }
+
+        Entity Demografia {
+            String grupoEdad
+            String sexo
+            String etnicidad
+        }
+
+        Entity Historial {
+            boolean fumador
+            boolean diabetico
+            List<String> condicionesPrevias
+        }
+
+        Entity EntornoClinico {
+            String tipoAmbiente
+        }
+
+        Entity Sintoma {
+            String descripcion
         }
     }
 
@@ -33,12 +99,37 @@ Domain RecaudacionImagenes {
         type = CORE_DOMAIN
         domainVisionStatement = "Garantizar la eliminación segura de información sensible en imágenes médicas"
 
-        Entity ProcesoAnonimizacion {
-            Long id
-            String modalidad // rayos X, tomografía, resonancia, etc.
-            String regionAnatomica
-            String estado
-            String pipeline
+        Entity Anonimizar {
+            String imagenId
+            String version
+            String ubicacionImagen
+            String imagenProcesadaPath
+            String detalleAnonimizacion
+            - TipoImagen tipoImagen
+            - AtributosImagen atributosImagen
+        }
+    }
+
+    Subdomain Metadata {
+        type = CORE_DOMAIN
+        domainVisionStatement = "Extraer y gestionar metadatos de las imágenes médicas"
+
+        Entity Metadata {
+            String imagenId
+            String version
+            String resolucion
+            String contraste
+            boolean es3D
+            String faseEscaner
+            Date timestamp
+            Map<String, String> tags
+            - TipoImagen tipoImagen
+            - AtributosImagen atributosImagen
+            - ContextoProcesal contextoProcesal
+            - Demografia demografia
+            - Historial historial
+            - EntornoClinico entornoClinico
+            List<Sintoma> sintomas
         }
     }
 }
@@ -51,7 +142,7 @@ Domain Procesamiento {
         domainVisionStatement = "Ejecutar pipelines especializados para diferentes tipos de imágenes médicas"
 
         Entity Pipeline {
-            Long id
+            String id
             String tipo
             String modalidad
             String regionAnatomica
@@ -64,7 +155,7 @@ Domain Procesamiento {
         domainVisionStatement = "Extraer y gestionar metadatos y etiquetas de las imágenes médicas"
 
         Entity Metadatos {
-            Long id
+            String id
             String grupoDemografico
             String entornoClinico
             String fase
@@ -77,8 +168,8 @@ Domain Procesamiento {
         domainVisionStatement = "Gestionar el almacenamiento seguro y aislado de datos por proveedor"
 
         Entity Contenedor {
-            Long id
-            Long proveedorId
+            String id
+            String proveedorId
             String region
             String tipo // privado, compartido
             Double capacidad
@@ -94,7 +185,7 @@ Domain Distribucion {
         domainVisionStatement = "Administrar cuentas de cliente y niveles de servicio"
 
         Entity Cliente {
-            Long id
+            String id
             String nombre
             String tipo // Standard, Pro, Enterprise
             Date fechaRegistro
@@ -102,16 +193,49 @@ Domain Distribucion {
         }
     }
 
-    Subdomain AccesoDatos {
+    Subdomain Consulta {
         type = CORE_DOMAIN
         domainVisionStatement = "Gestionar búsqueda y acceso a datos según nivel de suscripción"
 
-        Entity Consulta {
-            Long id
-            Long clienteId
-            String criterios
+        Entity ImagenMedica {
+            String id
+            String url
             String estado
-            Date fechaEjecucion
+            Date fechaCreacion
+            - TipoImagen tipoImagen
+            - AtributosImagen atributosImagen
+        }
+
+        Entity ImagenDemografia {
+            String id
+            String imagenId
+            - Demografia demografia
+        }
+
+        Entity ImagenModalidad {
+            String id
+            String imagenId
+            - Modalidad modalidad
+            - RegionAnatomica regionAnatomica
+        }
+
+        Entity ImagenMedicaConsultaConFiltros {
+            - Demografia demografia
+            - TipoImagen tipoImagen
+        }
+
+        Entity ImagenConsultaSagaState {
+            String sagaId
+            String status
+            Date createdAt
+            Date completedAt
+            String errorMessage
+            - Demografia demografiaFilter
+            - TipoImagen tipoImagenFilter
+            List<String> demografiaResults
+            List<String> modalidadResults
+            List<String> intersectedIds
+            List<ImagenMedica> finalResults
         }
     }
 
@@ -120,8 +244,8 @@ Domain Distribucion {
         domainVisionStatement = "Provisionar y gestionar ambientes cloud dedicados para clientes Pro y Enterprise"
 
         Entity Ambiente {
-            Long id
-            Long clienteId
+            String id
+            String clienteId
             String tipo
             String estado
             Date fechaCreacion
@@ -133,7 +257,7 @@ Domain Distribucion {
         domainVisionStatement = "Garantizar cumplimiento HIPAA y seguridad en el acceso a datos"
 
         Entity Auditoria {
-            Long id
+            String id
             String operacion
             String usuario
             Date fecha
@@ -146,18 +270,18 @@ Domain Distribucion {
         domainVisionStatement = "Gestionar la trazabilidad y compensación por el uso de imágenes médicas a los proveedores"
 
         Entity UsoImagen {
-            Long id
-            Long imagenId
-            Long proveedorId
-            Long clienteId
+            String id
+            String imagenId
+            String proveedorId
+            String clienteId
             Date fechaUso
             String tipoUso // descarga, consulta, entrenamiento
             Double compensacion
         }
 
         Entity CompensacionProveedor {
-            Long id
-            Long proveedorId
+            String id
+            String proveedorId
             Date periodoInicio
             Date periodoFin
             Double montoTotal
@@ -167,7 +291,7 @@ Domain Distribucion {
     }
 }
 
-BoundedContext ContextoRecoleccion implements GestionProveedores, Ingestion, Anonimizacion {
+BoundedContext ContextoIngestion implements GestionProveedores, Ingestion {
     Module seguridad {
         Aggregate AccesoProveedor {
             Entity Credenciales {
@@ -183,6 +307,114 @@ BoundedContext ContextoRecoleccion implements GestionProveedores, Ingestion, Ano
             }
         }
     }
+    
+    Module sagas {
+        Aggregate ImagenIngestionSaga {
+            Entity ImagenIngestionSagaState {
+                String sagaId
+                String status
+                Date createdAt
+                Date completedAt
+                String errorMessage
+                String imagenId
+                boolean anonimizacionCompleted
+                boolean metadataCompleted
+                String imagenProcesadaPath
+                Map<String, String> tags
+            }
+        }
+    }
+}
+
+BoundedContext ContextoAnonimizacion implements Anonimizacion {
+    Module persistencia {
+        Aggregate AnonimizacionAggregate {
+            Entity Anonimizar {
+                String imagenId
+                String version
+                String ubicacionImagen
+                String imagenProcesadaPath
+                String detalleAnonimizacion
+            }
+        }
+    }
+    
+    Module comandos {
+        Aggregate ComandosAnonimizacion {
+            Entity EliminarAnonimizacion {
+                String sagaId
+                String imagenId
+                String version
+            }
+        }
+    }
+    
+    Module eventos {
+        Aggregate EventosAnonimizacion {
+            Entity Anonimizada {
+                String sagaId
+                String imagenId
+                boolean success
+                String errorMessage
+                String imagenProcesadaPath
+            }
+            
+            Entity AnonimizacionEliminada {
+                String sagaId
+                String imagenId
+                boolean success
+                String errorMessage
+            }
+        }
+    }
+}
+
+BoundedContext ContextoMetadata implements Metadata {
+    Module persistencia {
+        Aggregate MetadataAggregate {
+            Entity Metadata {
+                String imagenId
+                String version
+                Map<String, String> tags
+                Date timestamp
+            }
+        }
+    }
+    
+    Module comandos {
+        Aggregate ComandosMetadata {
+            Entity EliminarMetadata {
+                String sagaId
+                String imagenId
+                String version
+            }
+            
+            Entity GenerarMetadata {
+                String sagaId
+                String imagenId
+                String version
+            }
+        }
+    }
+    
+    Module eventos {
+        Aggregate EventosMetadata {
+            Entity MetadataGenerada {
+                String sagaId
+                String imagenId
+                boolean success
+                String errorMessage
+                Map<String, String> tags
+            }
+            
+            Entity MetadataEliminada {
+                String sagaId
+                String imagenId
+                boolean success
+                String errorMessage
+            }
+        }
+    }
 }
 
 BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
@@ -194,7 +426,7 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
                 String descripcion
                 Boolean activo
             }
-            ValueObject ConfiguracionProcesamiento {
+            Entity ConfiguracionProcesamiento {
                 String parametros
                 String versionAlgoritmo
             }
@@ -207,7 +439,7 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
                 String descripcion
                 String sistemaCodificacion
             }
-            ValueObject Localizacion {
+            Entity Localizacion {
                 String coordenadas
                 String referencias
             }
@@ -220,7 +452,7 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
                 String descripcion
                 String clasificacionICD
             }
-            ValueObject Hallazgos {
+            Entity Hallazgos {
                 String descripcion
                 String severidad
                 String confianza
@@ -229,7 +461,103 @@ BoundedContext ContextoProcesamiento implements ProcesadorImagenes, Etiquetado {
     }
 }
 
-BoundedContext ContextoDistribucion implements GestionClientes, AccesoDatos, AmbienteVirtual, Atribucion {
+BoundedContext ContextoConsulta implements Consulta {
+    Module sagas {
+        Aggregate ImagenConsultaSaga {
+            Entity ImagenConsultaSagaState {
+                String sagaId
+                String status
+                Date createdAt
+                Date completedAt
+                String errorMessage
+                - Demografia demografiaFilter
+                - TipoImagen tipoImagenFilter
+                List<String> demografiaResults
+                List<String> modalidadResults
+                List<String> intersectedIds
+                List<ImagenMedica> finalResults
+            }
+        }
+    }
+    
+    Module comandos {
+        Aggregate ComandosConsulta {
+            Entity ImagenConsultaDemografiaRequestCommand {
+                String sagaId
+                - Demografia filter
+            }
+            
+            Entity ImagenConsultaModalidadRequestCommand {
+                String sagaId
+                - TipoImagen filter
+            }
+            
+            Entity ImagenConsultaDataRequestCommand {
+                String sagaId
+                List<String> imagenIds
+            }
+        }
+    }
+    
+    Module eventos {
+        Aggregate EventosConsulta {
+            Entity ImagenConsultaDemografiaResponseEvent {
+                String sagaId
+                boolean success
+                String errorMessage
+                List<String> imagenIds
+            }
+            
+            Entity ImagenConsultaModalidadResponseEvent {
+                String sagaId
+                boolean success
+                String errorMessage
+                List<String> imagenIds
+            }
+            
+            Entity ImagenConsultaDataResponseEvent {
+                String sagaId
+                boolean success
+                String errorMessage
+                List<ImagenMedica> imagenes
+            }
+            
+            Entity ImagenConsultaCompletedEvent {
+                String sagaId
+                boolean success
+                String errorMessage
+                List<ImagenMedica> imagenes
+            }
+        }
+    }
+}
+
+BoundedContext ContextoConsultaDemografia implements Consulta {
+    Module persistencia {
+        Aggregate DemografiaAggregate {
+            Entity ImagenDemografia {
+                String id
+                String imagenId
+                - Demografia demografia
+            }
+        }
+    }
+}
+
+BoundedContext ContextoConsultaModalidad implements Consulta {
+    Module persistencia {
+        Aggregate ModalidadAggregate {
+            Entity ImagenModalidad {
+                String id
+                String imagenId
+                - Modalidad modalidad
+                - RegionAnatomica regionAnatomica
+            }
+        }
+    }
+}
+
+BoundedContext ContextoDistribucion implements GestionClientes, AmbienteVirtual, Atribucion {
     Module ambienteVirtual {
         Aggregate SeguridadAmbiente {
             Entity ControlAcceso {
@@ -244,7 +572,7 @@ BoundedContext ContextoDistribucion implements GestionClientes, AccesoDatos, Amb
                 String usuario
                 String resultado
             }
-            ValueObject ConfiguracionRed {
+            Entity ConfiguracionRed {
                 String vpcConfig
                 String firewallRules
                 String encryptionKeys
@@ -276,27 +604,42 @@ BoundedContext ContextoSeguridad implements Seguridad {
 ContextMap SaludTechFuturoMap {
     state = TO_BE
     
-    contains ContextoRecoleccion
+    contains ContextoIngestion
+    contains ContextoAnonimizacion
+    contains ContextoMetadata
     contains ContextoProcesamiento
+    contains ContextoConsulta
+    contains ContextoConsultaDemografia
+    contains ContextoConsultaModalidad
     contains ContextoDistribucion
     contains ContextoSeguridad
 
-    ContextoRecoleccion [D] <- [U] ContextoSeguridad
+    ContextoIngestion [D] <- [U] ContextoSeguridad
+    ContextoAnonimizacion [D] <- [U] ContextoSeguridad
+    ContextoMetadata [D] <- [U] ContextoSeguridad
     ContextoProcesamiento [D] <- [U] ContextoSeguridad
+    ContextoConsulta [D] <- [U] ContextoSeguridad
+    ContextoConsultaDemografia [D] <- [U] ContextoSeguridad
+    ContextoConsultaModalidad [D] <- [U] ContextoSeguridad
     ContextoDistribucion [D] <- [U] ContextoSeguridad
 
-     /* Protege el procesamiento de cambios en formatos de ingesta y protocolos de proveedores */
-    ContextoProcesamiento [ACL]<-[U] ContextoRecoleccion
+    /* Relaciones de Ingestion */
+    ContextoAnonimizacion [P]<->[P] ContextoIngestion
+    ContextoMetadata [P]<->[P] ContextoIngestion
 
-     /* Mantiene estabilidad en las interfaces de acceso a datos para clientes */
-    ContextoDistribucion [ACL]<-[U] ContextoProcesamiento
+    /* Relaciones de Consulta */
+    ContextoConsultaDemografia [P]<->[P] ContextoConsulta
+    ContextoConsultaModalidad [P]<->[P] ContextoConsulta
 
-     /* Aísla cambios en la gestión de proveedores del sistema de distribución */
-    ContextoDistribucion [ACL]<-[U] ContextoRecoleccion
+    /* Protege el procesamiento de cambios en formatos de ingesta y protocolos de proveedores */
+    ContextoProcesamiento [ACL]<-[U] ContextoIngestion
+
+    /* Mantiene estabilidad en las interfaces de acceso a datos para clientes */
+    ContextoConsulta [ACL]<-[U] ContextoProcesamiento
+
+    /* Aísla cambios en la gestión de proveedores del sistema de distribución */
+    ContextoDistribucion [ACL]<-[U] ContextoIngestion
 }
-
-
-
 
 UserStory RegistrarProveedor {
     As a "Administrador"
@@ -304,10 +647,46 @@ UserStory RegistrarProveedor {
     so that "pueda comenzar a recibir imágenes médicas de un nuevo centro de salud."
 }
 
-UserStory ImportarDatos {
+UserStory IngestionImagen {
     As a "Ingeniero de Datos"
-        I want to "iniciar" a "TrabajoImportacion"
-    so that "pueda transferir imágenes médicas desde la infraestructura del proveedor a nuestra nube."
+        I want to "iniciar" a "ImagenIngestionSaga"
+    so that "pueda procesar, anonimizar y extraer metadatos de una imagen médica de forma coordinada."
+}
+
+UserStory AnonimizarImagen {
+    As a "Especialista en Privacidad"
+        I want to "ejecutar" a "Anonimizar"
+    so that "pueda eliminar información sensible de pacientes en las imágenes médicas."
+}
+
+UserStory GenerarMetadatos {
+    As a "Analista de Datos"
+        I want to "generar" a "Metadata"
+    so that "pueda etiquetar y clasificar las imágenes médicas para facilitar su búsqueda."
+}
+
+UserStory CompensacionFallida {
+    As a "Ingeniero de Sistemas"
+        I want to "ejecutar" a "EliminarAnonimizacion" and "EliminarMetadata"
+    so that "pueda revertir cambios parciales cuando falla un proceso de ingesta de imágenes."
+}
+
+UserStory ConsultarImagenes {
+    As a "Cliente"
+        I want to "iniciar" a "ImagenConsultaSaga"
+    so that "pueda buscar imágenes médicas que cumplan con criterios demográficos y de modalidad específicos."
+}
+
+UserStory ConsultarPorDemografia {
+    As a "Investigador Médico"
+        I want to "filtrar" a "ImagenDemografia"
+    so that "pueda encontrar imágenes de pacientes con características demográficas específicas."
+}
+
+UserStory ConsultarPorModalidad {
+    As a "Radiólogo"
+        I want to "filtrar" a "ImagenModalidad"
+    so that "pueda encontrar imágenes de una modalidad y región anatómica específica."
 }
 
 UserStory AdministracionDeSubscripciones {
@@ -321,18 +700,6 @@ UserStory CrearAmbiente {
     As a "Ingeniero Cloud"
         I want to "provisionar" an "Ambiente"
     so that "los clientes Pro y Enterprise puedan acceder a sus datos en un ambiente dedicado."
-}
-
-UserStory BuscarDatos {
-    As a "Cliente"
-        I want to "ejecutar" a "Consulta"
-    so that "pueda encontrar imágenes médicas relevantes para mi investigación."
-}
-
-UserStory DecargaDeDatos {
-  As a "Cliente"
-    I want to "descargar" an "Imagen o conjunto de datos"
-  so that "pueda utilizarlos para entrenar modelos de IA."
 }
 
 UserStory MonitorearSeguridad {

@@ -1,0 +1,22 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package seguridad {
+	package "'AccesoProveedor' Aggregate" <<Rectangle>> {
+		class Credenciales <<(E,DarkSeaGreen) Entity>> {
+			String usuario
+			String tipoAutenticacion
+			String estado
+			Date ultimoAcceso
+		}
+		class PermisosCarga <<(E,DarkSeaGreen) Entity>> {
+			String tipoPermiso
+			String alcance
+			Date expiracion
+		}
+	}
+}
+
+
+@enduml

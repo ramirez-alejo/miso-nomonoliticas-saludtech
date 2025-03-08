@@ -1,0 +1,28 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package cumplimiento {
+	package "'HIPAA' Aggregate" <<Rectangle>> {
+		class RegistroAuditoria <<(E,DarkSeaGreen) Entity>> {
+			String tipoEvento
+			Date timestamp
+			String usuario
+			String recurso
+			String resultado
+		}
+		class PoliticaPrivacidad <<(E,DarkSeaGreen) Entity>> {
+			String version
+			Date fechaEfectiva
+			String alcance
+			Boolean activa
+		}
+	}
+}
+legend left
+  This bounded context implements the subdomain 'Seguridad', which contains the following entities:
+   - Auditoria
+end legend
+
+
+@enduml

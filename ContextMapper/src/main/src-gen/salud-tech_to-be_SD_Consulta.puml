@@ -1,0 +1,50 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Consulta' Core Domain" <<Rectangle>> {
+	class ImagenMedica <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String url1
+		String estado
+		Date fechaCreacion
+		TipoImagen tipoImagen
+		AtributosImagen atributosImagen
+	}
+	class ImagenDemografia <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String imagenId
+		Demografia demografia
+	}
+	class ImagenModalidad <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String imagenId
+		Modalidad modalidad
+		RegionAnatomica regionAnatomica
+	}
+	class ImagenMedicaConsultaConFiltros <<(E,DarkSeaGreen) Entity>> {
+		Demografia demografia
+		TipoImagen tipoImagen
+	}
+	class ImagenConsultaSagaState <<(E,DarkSeaGreen) Entity>> {
+		String sagaId
+		String status
+		Date createdAt
+		Date completedAt
+		String errorMessage
+		List<String> demografiaResults
+		List<String> modalidadResults
+		List<String> intersectedIds
+		List<ImagenMedica> finalResults
+		Demografia demografiaFilter
+		TipoImagen tipoImagenFilter
+	}
+}
+legend left
+  This subdomain is part of the 'Distribucion' domain.
+
+  Gestionar búsqueda y acceso a datos según nivel de suscripción
+end legend
+
+
+@enduml

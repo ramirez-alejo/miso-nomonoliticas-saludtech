@@ -1,0 +1,32 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Atribucion' Core Domain" <<Rectangle>> {
+	class UsoImagen <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String imagenId
+		String proveedorId
+		String clienteId
+		Date fechaUso
+		String tipoUso
+		Double compensacion
+	}
+	class CompensacionProveedor <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String proveedorId
+		Date periodoInicio
+		Date periodoFin
+		Double montoTotal
+		String estado
+		Date fechaPago
+	}
+}
+legend left
+  This subdomain is part of the 'Distribucion' domain.
+
+  Gestionar la trazabilidad y compensación por el uso de imágenes médicas a los proveedores
+end legend
+
+
+@enduml

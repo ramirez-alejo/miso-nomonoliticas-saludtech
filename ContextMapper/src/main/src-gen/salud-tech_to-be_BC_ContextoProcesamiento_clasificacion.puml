@@ -1,0 +1,46 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package clasificacion {
+	package "'Modalidad' Aggregate" <<Rectangle>> {
+		class TipoModalidad <<(E,DarkSeaGreen) Entity>> {
+			String codigo
+			String nombre
+			String descripcion
+			Boolean activo
+		}
+		class ConfiguracionProcesamiento <<(E,DarkSeaGreen) Entity>> {
+			String parametros
+			String versionAlgoritmo
+		}
+	}
+	package "'RegionAnatomica' Aggregate" <<Rectangle>> {
+		class TipoRegion <<(E,DarkSeaGreen) Entity>> {
+			String codigo
+			String nombre
+			String descripcion
+			String sistemaCodificacion
+		}
+		class Localizacion <<(E,DarkSeaGreen) Entity>> {
+			String coordenadas
+			String referencias
+		}
+	}
+	package "'Diagnostico' Aggregate" <<Rectangle>> {
+		class Patologia <<(E,DarkSeaGreen) Entity>> {
+			String codigo
+			String nombre
+			String descripcion
+			String clasificacionICD
+		}
+		class Hallazgos <<(E,DarkSeaGreen) Entity>> {
+			String descripcion
+			String severidad
+			String confianza
+		}
+	}
+}
+
+
+@enduml

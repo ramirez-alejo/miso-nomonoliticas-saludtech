@@ -1,0 +1,24 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package cumplimiento {
+	package "'HIPAA' Aggregate" <<Rectangle>> {
+		class RegistroAuditoria <<(E,DarkSeaGreen) Entity>> {
+			String tipoEvento
+			Date timestamp
+			String usuario
+			String recurso
+			String resultado
+		}
+		class PoliticaPrivacidad <<(E,DarkSeaGreen) Entity>> {
+			String version
+			Date fechaEfectiva
+			String alcance
+			Boolean activa
+		}
+	}
+}
+
+
+@enduml

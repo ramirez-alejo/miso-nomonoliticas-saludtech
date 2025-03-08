@@ -1,0 +1,21 @@
+@startuml
+
+skinparam componentStyle uml2
+
+package "'Seguridad' Supporting Domain" <<Rectangle>> {
+	class Auditoria <<(E,DarkSeaGreen) Entity>> {
+		String id
+		String operacion
+		String usuario
+		Date fecha
+		String resultado
+	}
+}
+legend left
+  This subdomain is part of the 'Distribucion' domain.
+
+  Garantizar cumplimiento HIPAA y seguridad en el acceso a datos
+end legend
+
+
+@enduml
