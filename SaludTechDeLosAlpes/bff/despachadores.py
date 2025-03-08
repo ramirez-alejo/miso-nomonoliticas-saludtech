@@ -7,7 +7,7 @@ class Despachador:
     def __init__(self):
 
         self.client = pulsar.Client(f'pulsar://{broker_host()}:6650')  
-        self.producer = self.client.create_producer('ingestion-anonimizar')
+        self.producer = self.client.create_producer('imagen-anonimizar')
 
     def procesar_ingestion(self, input: IngestionInput) -> IngestionResponse:
         imagen_id = input.ImagenId

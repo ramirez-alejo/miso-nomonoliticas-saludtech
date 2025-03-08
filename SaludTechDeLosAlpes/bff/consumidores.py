@@ -11,7 +11,7 @@ class Consumidor:
 
         # Configura la conexión a Pulsar
         self.client = pulsar.Client(f'pulsar://{broker_host()}:6650')  # URL del servidor Pulsar
-        self.consumer = self.client.subscribe('ingestion-anonimizar', 'my-subscription')  # Tópico y nombre de la suscripción
+        self.consumer = self.client.subscribe('imagen-anonimizar', 'my-subscription')  # Tópico y nombre de la suscripción
         
         print("[INFO] Consumidor iniciado. Esperando mensajes...")  # Mensaje al iniciar
 
