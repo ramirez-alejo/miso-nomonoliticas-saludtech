@@ -12,8 +12,6 @@ La solución de logging está compuesta por:
 
 ## Arquitectura
 
-![Arquitectura de Logging](https://miro.medium.com/max/1400/1*LnKJcvuoONUUQBrDxVVmCw.png)
-
 1. **Promtail** se ejecuta como un DaemonSet en cada nodo del cluster, recolectando logs de todos los pods.
 2. Los logs son filtrados para capturar específicamente los eventos de saga marcados con "SAGA_EVENT".
 3. **Loki** almacena y indexa los logs, permitiendo consultas eficientes.
