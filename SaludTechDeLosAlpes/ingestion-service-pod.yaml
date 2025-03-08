@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert -f docker-compose.yml
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: ingestion-service
+  name: ingestion-service
+spec:
+  containers:
+    - env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ConnectionStrings__DefaultConnection
+          value: Host=10.114.240.3;Database=SaludTechIngestionDb;Username=postgres;Password=postgres;SslMode=Disable
+        - name: MessageBroker__Host
+          value: broker
+        - name: MessageBroker__Port
+          value: "6650"
+        - name: Redis__ConnectionString
+          value: redis:6379
+      image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/ingestion-service:latest
+      name: ingestion-service
+      ports:
+        - containerPort: 80
+          protocol: TCP
+  restartPolicy: OnFailure

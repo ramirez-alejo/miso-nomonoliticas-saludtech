@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  annotations:
+    kompose.cmd: C:\ProgramData\chocolatey\lib\kubernetes-kompose\tools\kompose.exe convert -f docker-compose.yml
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: anonimizacion-service
+  name: anonimizacion-service
+spec:
+  containers:
+    - env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        - name: ConnectionStrings__DefaultConnection
+          value: Host=10.114.240.3;Database=SaludTechAnonimizacionDb;Username=postgres;Password=postgres;SslMode=Disable
+        - name: MessageBroker__Host
+          value: broker
+        - name: MessageBroker__Port
+          value: "6650"
+      image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/anonimizacion-service:latest
+      name: anonimizacion-service
+      resources:
+        requests:
+          memory: "256Mi"
+          cpu: "100m"
+        limits:
+          memory: "512Mi"
+          cpu: "200m"
+      securityContext:
+        runAsUser: 0
+        capabilities:
+          add: ["NET_BIND_SERVICE"]
+      ports:
+        - containerPort: 80
+          protocol: TCP
+  restartPolicy: OnFailure
