@@ -28,6 +28,13 @@ spec:
               value: redis:6379
             - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
               value: Ignore
+            # Añadir configuración de logging
+            - name: Logging__LogLevel__Default
+              value: "Information"
+            - name: Logging__LogLevel__Microsoft
+              value: "Warning"
+            - name: Logging__LogLevel__Ingestion
+              value: "Information"
           image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/ingestion-service:latest
           name: ingestion-service
           securityContext:

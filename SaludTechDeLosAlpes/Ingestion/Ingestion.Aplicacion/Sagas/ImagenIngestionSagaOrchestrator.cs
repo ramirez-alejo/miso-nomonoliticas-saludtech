@@ -4,6 +4,7 @@ using Ingestion.Aplicacion.Dtos;
 using Ingestion.Aplicacion.Mapeo;
 using Ingestion.Dominio.Comandos;
 using Ingestion.Dominio.Eventos;
+using Ingestion.Infraestructura.Logging;
 using Ingestion.Infraestructura.Persistencia.Repositorios;
 using Microsoft.Extensions.Logging;
 
@@ -15,6 +16,7 @@ public class ImagenIngestionSagaOrchestrator
     private readonly ISagaStateRepository _stateRepository;
     private readonly IImagenRepository _imagenRepository;
     private readonly ILogger<ImagenIngestionSagaOrchestrator> _logger;
+    private readonly SagaLogger _sagaLogger;
 
     // Topic constants
     private const string TOPIC_ANONIMIZAR = "imagen-anonimizar";
@@ -33,6 +35,7 @@ public class ImagenIngestionSagaOrchestrator
         _stateRepository = stateRepository;
         _imagenRepository = imagenRepository;
         _logger = logger;
+        _sagaLogger = new SagaLogger(logger);
     }
 
     public async Task<Guid> StartSaga(ImagenDto imagenDto)
@@ -53,6 +56,10 @@ public class ImagenIngestionSagaOrchestrator
 
         await _stateRepository.SaveStateAsync(state);
         _logger.LogInformation("Started new ingestion saga with ID {SagaId} for imagen {ImagenId}", sagaId, imagenId);
+        _sagaLogger.LogSagaStarted(sagaId, "ImagenIngestion", new Dictionary<string, object>
+        {
+            ["imagenId"] = imagenId
+        });
 
         // Create and publish Anonimizar command
         var anonimizarCommand = new Anonimizar
@@ -91,6 +98,8 @@ public class ImagenIngestionSagaOrchestrator
 
         if (!evento.Success)
         {
+            _sagaLogger.LogSagaStepFailed(evento.SagaId, "ImagenIngestion", "Anonimizacion", 
+                evento.ErrorMessage ?? "Anonimización failed");
             await HandleFailure(state, evento.ErrorMessage ?? "Anonimización failed");
             return;
         }
@@ -101,6 +110,8 @@ public class ImagenIngestionSagaOrchestrator
         state.Status = "AnonimizacionCompleted";
         await _stateRepository.SaveStateAsync(state);
         _logger.LogInformation("Anonimización completed for saga {SagaId}", evento.SagaId);
+        _sagaLogger.LogSagaStepCompleted(evento.SagaId, "ImagenIngestion", "Anonimizacion", 
+            new Dictionary<string, object> { ["imagenProcesadaPath"] = evento.ImagenProcesadaPath });
 
         // Check if we can complete the saga
         await TryCompleteSaga(state);
@@ -117,6 +128,8 @@ public class ImagenIngestionSagaOrchestrator
 
         if (!evento.Success)
         {
+            _sagaLogger.LogSagaStepFailed(evento.SagaId, "ImagenIngestion", "Metadata", 
+                evento.ErrorMessage ?? "Metadata generation failed");
             await HandleFailure(state, evento.ErrorMessage ?? "Metadata generation failed");
             return;
         }
@@ -127,6 +140,8 @@ public class ImagenIngestionSagaOrchestrator
         state.Status = "MetadataCompleted";
         await _stateRepository.SaveStateAsync(state);
         _logger.LogInformation("Metadata generation completed for saga {SagaId}", evento.SagaId);
+        _sagaLogger.LogSagaStepCompleted(evento.SagaId, "ImagenIngestion", "Metadata", 
+            new Dictionary<string, object> { ["tagsCount"] = evento.Tags?.Count ?? 0 });
 
         // Check if we can complete the saga
         await TryCompleteSaga(state);
@@ -168,6 +183,11 @@ public class ImagenIngestionSagaOrchestrator
         });
 
         _logger.LogInformation("Saga {SagaId} completed successfully", state.SagaId);
+        _sagaLogger.LogSagaCompleted(state.SagaId, "ImagenIngestion", new Dictionary<string, object>
+        {
+            ["imagenId"] = state.ImagenId,
+            ["duration"] = state.CompletedAt.HasValue ? (state.CompletedAt.Value - state.CreatedAt).TotalMilliseconds : 0
+        });
     }
 
     private async Task HandleFailure(ImagenIngestionSagaState state, string errorMessage)
@@ -191,6 +211,11 @@ public class ImagenIngestionSagaOrchestrator
         });
 
         _logger.LogError("Saga {SagaId} failed: {ErrorMessage}", state.SagaId, errorMessage);
+        _sagaLogger.LogSagaFailed(state.SagaId, "ImagenIngestion", errorMessage, new Dictionary<string, object>
+        {
+            ["imagenId"] = state.ImagenId,
+            ["duration"] = state.CompletedAt.HasValue ? (state.CompletedAt.Value - state.CreatedAt).TotalMilliseconds : 0
+        });
     }
 
     private async Task ExecuteCompensationActions(ImagenIngestionSagaState state)
@@ -213,6 +238,7 @@ public class ImagenIngestionSagaOrchestrator
         try
         {
             _logger.LogInformation("Executing compensation action: Rolling back Anonimizacion data for saga {SagaId}", state.SagaId);
+            _sagaLogger.LogCompensationStarted(state.SagaId, "ImagenIngestion", "EliminarAnonimizacion");
             
             // Create and publish EliminarAnonimizacion command
             var eliminarAnonimizacionCommand = new EliminarAnonimizacion
@@ -225,6 +251,7 @@ public class ImagenIngestionSagaOrchestrator
             await _messageProducer.SendWithSchemaAsync(TOPIC_ELIMINAR_ANONIMIZACION, eliminarAnonimizacionCommand);
             
             _logger.LogInformation("Published eliminar anonimizacion command for saga {SagaId}", state.SagaId);
+            _sagaLogger.LogCompensationCompleted(state.SagaId, "ImagenIngestion", "EliminarAnonimizacion");
         }
         catch (Exception ex)
         {
@@ -238,6 +265,7 @@ public class ImagenIngestionSagaOrchestrator
         try
         {
             _logger.LogInformation("Executing compensation action: Rolling back Metadata data for saga {SagaId}", state.SagaId);
+            _sagaLogger.LogCompensationStarted(state.SagaId, "ImagenIngestion", "EliminarMetadata");
             
             // Create and publish EliminarMetadata command
             var eliminarMetadataCommand = new EliminarMetadata
@@ -250,6 +278,7 @@ public class ImagenIngestionSagaOrchestrator
             await _messageProducer.SendWithSchemaAsync(TOPIC_ELIMINAR_METADATA, eliminarMetadataCommand);
             
             _logger.LogInformation("Published eliminar metadata command for saga {SagaId}", state.SagaId);
+            _sagaLogger.LogCompensationCompleted(state.SagaId, "ImagenIngestion", "EliminarMetadata");
         }
         catch (Exception ex)
         {
