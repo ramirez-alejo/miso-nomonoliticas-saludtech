@@ -117,9 +117,10 @@ public class ImagenConsultaDataWarehouseRequestWorker : BackgroundService
                 }
             }
 
-            if (_scope.HasValue)
+            // Dispose scopes
+            if (_scope is IAsyncDisposable disposable)
             {
-                await _scope.Value.DisposeAsync();
+                await disposable.DisposeAsync();
             }
         }
         catch (Exception ex)

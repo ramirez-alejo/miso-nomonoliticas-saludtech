@@ -46,14 +46,16 @@ public class Program
 
 		// Register MessageBroker services
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-		builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+		builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
 		
 		// Register HttpClient
 		builder.Services.AddHttpClient();
 		
-		// Register background workers
-		builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
-		builder.Services.AddHostedService<Workers.ImagenIngestionSagaWorker>();
+// Register background workers
+builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
+builder.Services.AddHostedService<Workers.AnonimizadaSubscriber>();
+builder.Services.AddHostedService<Workers.MetadataGeneradaSubscriber>();
+builder.Services.AddHostedService<Workers.SolicitudProcesamientoImagenWorker>();
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>

@@ -1,3 +1,5 @@
+using Ingestion.Dominio.Saga;
+
 namespace Ingestion.Aplicacion.Sagas;
 
 public interface ISagaStateRepository

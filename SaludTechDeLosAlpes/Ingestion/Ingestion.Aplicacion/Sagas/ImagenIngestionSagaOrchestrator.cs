@@ -4,6 +4,7 @@ using Ingestion.Aplicacion.Dtos;
 using Ingestion.Aplicacion.Mapeo;
 using Ingestion.Dominio.Comandos;
 using Ingestion.Dominio.Eventos;
+using Ingestion.Dominio.Saga;
 using Ingestion.Infraestructura.Logging;
 using Ingestion.Infraestructura.Persistencia.Repositorios;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public class ImagenIngestionSagaOrchestrator
     private const string TOPIC_ELIMINAR_ANONIMIZACION = "imagen-eliminar-anonimizacion";
     private const string TOPIC_ELIMINAR_METADATA = "metadata-eliminar";
     private const string TOPIC_INGESTION_COMPLETED = "imagen-ingestion-completed";
+    private const string TOPIC_SAGA_INICIADA = "saga-iniciada";
 
     public ImagenIngestionSagaOrchestrator(
         IMessageProducer messageProducer,
@@ -38,7 +40,23 @@ public class ImagenIngestionSagaOrchestrator
         _sagaLogger = new SagaLogger(logger);
     }
 
+    /// <summary>
+    /// Starts a new ingestion saga
+    /// </summary>
+    /// <param name="imagenDto">The image data</param>
+    /// <returns>The saga ID</returns>
     public async Task<Guid> StartSaga(ImagenDto imagenDto)
+    {
+        return await StartSaga(imagenDto, null);
+    }
+
+    /// <summary>
+    /// Starts a new ingestion saga with correlation ID
+    /// </summary>
+    /// <param name="imagenDto">The image data</param>
+    /// <param name="correlationId">Optional correlation ID for tracking</param>
+    /// <returns>The saga ID</returns>
+    public async Task<Guid> StartSaga(ImagenDto imagenDto, Guid? correlationId)
     {
         // Create new saga state
         var sagaId = Guid.NewGuid();
@@ -60,6 +78,23 @@ public class ImagenIngestionSagaOrchestrator
         {
             ["imagenId"] = imagenId
         });
+
+        // Publish SagaIniciada event if we have a correlation ID
+        if (correlationId.HasValue)
+        {
+            var sagaIniciada = new SagaIniciada
+            {
+                CorrelationId = correlationId.Value,
+                SagaId = sagaId,
+                ImagenId = imagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_INICIADA, sagaIniciada);
+            _logger.LogInformation("Published saga iniciada event for saga {SagaId} with correlation ID {CorrelationId}", 
+                sagaId, correlationId.Value);
+        }
 
         // Create and publish Anonimizar command
         var anonimizarCommand = new Anonimizar

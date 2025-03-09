@@ -39,7 +39,7 @@ public class GenerarMetadataHandler{
 
 			var metadata = MapeoMetadataImagen.MapFromCommand(comando);
 			metadata.GenerarTags();
-			await _repository.UpsertMetadataGenerada(metadata, CancellationToken.None);
+			await _repository.InsertMetadataGenerada(metadata, CancellationToken.None);
 
 			_logger.LogInformation("Comando metadata procesado para ImagenId: {ImagenId}",
 				comando.ImagenId);

@@ -55,7 +55,7 @@ public class Program
 		// Register repositories and services
 		builder.Services.AddScoped<IMetadataRepository, MetadataRepository>();
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-		builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+		builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
 		builder.Services.AddScoped<GenerarMetadataHandler>();
 		builder.Services.AddScoped<EliminarMetadataHandler>();
 		builder.Services.AddHostedService<MetadataImagenSubscriptionWorker>();

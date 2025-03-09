@@ -4,6 +4,11 @@ using Ingestion.Dominio.Eventos;
 
 namespace Ingestion.Aplicacion.Workers;
 
+/// <summary>
+/// OBSOLETE: This worker has been replaced by AnonimizadaSubscriber and MetadataGeneradaSubscriber.
+/// These new subscribers handle each event type separately and inject the saga orchestrator.
+/// </summary>
+[Obsolete("This worker has been replaced by AnonimizadaSubscriber and MetadataGeneradaSubscriber")]
 public class ImagenIngestionSagaWorker : BackgroundService
 {
     private readonly ILogger<ImagenIngestionSagaWorker> _logger;
@@ -86,16 +91,12 @@ public class ImagenIngestionSagaWorker : BackgroundService
         {
             await base.StopAsync(stoppingToken);
             
-            // Stop and dispose anonimizada consumer
+            // Stop anonimizada consumer
             if (_anonimizadaConsumer != null)
             {
                 try 
                 {
                     await _anonimizadaConsumer.StopAsync();
-                    if (_anonimizadaConsumer is IAsyncDisposable asyncDisposable)
-                    {
-                        await asyncDisposable.DisposeAsync();
-                    }
                 }
                 catch (Exception ex)
                 {
@@ -103,16 +104,12 @@ public class ImagenIngestionSagaWorker : BackgroundService
                 }
             }
 
-            // Stop and dispose metadata consumer
+            // Stop metadata consumer
             if (_metadataConsumer != null)
             {
                 try 
                 {
                     await _metadataConsumer.StopAsync();
-                    if (_metadataConsumer is IAsyncDisposable asyncDisposable)
-                    {
-                        await asyncDisposable.DisposeAsync();
-                    }
                 }
                 catch (Exception ex)
                 {

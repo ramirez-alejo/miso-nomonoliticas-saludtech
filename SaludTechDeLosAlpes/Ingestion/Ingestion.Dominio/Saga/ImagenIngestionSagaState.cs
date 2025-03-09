@@ -1,6 +1,4 @@
-using Core.Dominio;
-
-namespace Ingestion.Aplicacion.Sagas;
+namespace Ingestion.Dominio.Saga;
 
 public class ImagenIngestionSagaState
 {

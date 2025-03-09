@@ -26,8 +26,6 @@ spec:
               value: "6650"
             - name: Redis__ConnectionString
               value: redis:6379
-            - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
-              value: Ignore
             # Añadir configuración de logging
             - name: Logging__LogLevel__Default
               value: "Information"
@@ -35,6 +33,9 @@ spec:
               value: "Warning"
             - name: Logging__LogLevel__Ingestion
               value: "Information"
+            # Add environment variables for BFF communication
+            - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
+              value: Ignore
           image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/ingestion-service:latest
           name: ingestion-service
           securityContext:
