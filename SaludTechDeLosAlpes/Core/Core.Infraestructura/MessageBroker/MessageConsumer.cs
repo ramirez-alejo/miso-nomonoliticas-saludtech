@@ -35,9 +35,9 @@ namespace Core.Infraestructura.MessageBroker
 
             if (_isRunning)
             {
-                throw new InvalidOperationException("Consumer is already running");
+                return;
             }
-            
+
             // If schema registry is enabled, use schema-based consumer
             if (_settings.UseSchemaRegistry)
             {
@@ -49,9 +49,9 @@ namespace Core.Infraestructura.MessageBroker
             var consumer = await _client.NewConsumer()
                 .Topic(topic)
                 .SubscriptionName(subscriptionName)
-                .SubscriptionType(SubscriptionType.Exclusive)
+                .SubscriptionType(SubscriptionType.Shared)
                 .SubscribeAsync();
-                
+
             _consumers[consumerKey] = consumer;
             _isRunning = true;
 
@@ -88,7 +88,7 @@ namespace Core.Infraestructura.MessageBroker
                                 {
                                     await messageHandler(messageData);
                                 }
-                                
+
                                 await consumer.AcknowledgeAsync(message.MessageId);
                             }
                         }
@@ -107,30 +107,30 @@ namespace Core.Infraestructura.MessageBroker
                     }
                 }
             });
-            
+
             _runningTasks.Add(consumptionTask);
         }
-        
+
         public async Task StartWithSchemaAsync<T>(string topic, string subscriptionName, Func<T, Task> messageHandler)
         {
             ThrowIfDisposed();
 
             if (_isRunning)
             {
-                throw new InvalidOperationException("Consumer is already running");
+                return;
             }
 
             string consumerKey = $"{topic}_{subscriptionName}_{typeof(T).FullName}";
-            
+
             try
             {
                 var schema = JsonSchemaProvider.CreateJsonSchema<T>();
                 var consumer = await _client.NewConsumer(schema)
                     .Topic(topic)
                     .SubscriptionName(subscriptionName)
-                    .SubscriptionType(SubscriptionType.Exclusive)
+                    .SubscriptionType(SubscriptionType.Shared)
                     .SubscribeAsync();
-                    
+
                 _schemaConsumers[consumerKey] = consumer;
                 _isRunning = true;
 
@@ -163,7 +163,7 @@ namespace Core.Infraestructura.MessageBroker
                         }
                     }
                 });
-                
+
                 _runningTasks.Add(consumptionTask);
             }
             catch (Exception ex)
@@ -173,7 +173,7 @@ namespace Core.Infraestructura.MessageBroker
                     // If we get the Guid[] not supported error, we need to use a different approach
                     Console.WriteLine($"Error creating schema consumer: {ex.Message}");
                     Console.WriteLine("Falling back to byte[] consumer for messages with Guid[] properties");
-                    
+
                     // Use a regular consumer instead
                     await StartAsync(topic, subscriptionName, messageHandler);
                 }
@@ -189,7 +189,7 @@ namespace Core.Infraestructura.MessageBroker
         {
             ThrowIfDisposed();
             _isRunning = false;
-            
+
             foreach (var consumer in _consumers.Values)
             {
                 if (consumer != null)
@@ -198,7 +198,7 @@ namespace Core.Infraestructura.MessageBroker
                 }
             }
             _consumers.Clear();
-            
+
             foreach (var consumer in _schemaConsumers.Values)
             {
                 if (consumer != null)
@@ -208,7 +208,7 @@ namespace Core.Infraestructura.MessageBroker
                 }
             }
             _schemaConsumers.Clear();
-            
+
             // Wait for all running tasks to complete
             if (_runningTasks.Count > 0)
             {
@@ -227,37 +227,45 @@ namespace Core.Infraestructura.MessageBroker
 
         public async ValueTask DisposeAsync()
         {
-            if (!_disposed)
+            try
             {
-                _isRunning = false;
-                
-                foreach (var consumer in _consumers.Values)
+                if (!_disposed)
                 {
-                    if (consumer != null)
+                    _isRunning = false;
+
+                    foreach (var consumer in _consumers.Values)
                     {
-                        await consumer.DisposeAsync();
+                        if (consumer != null)
+                        {
+                            await consumer.DisposeAsync();
+                        }
                     }
-                }
-                _consumers.Clear();
-                
-                foreach (var consumer in _schemaConsumers.Values)
-                {
-                    if (consumer != null)
+                    _consumers.Clear();
+
+                    foreach (var consumer in _schemaConsumers.Values)
                     {
-                        // Since we don't know the exact type, we need to use dynamic
-                        await ((dynamic)consumer).DisposeAsync();
+                        if (consumer != null)
+                        {
+                            // Since we don't know the exact type, we need to use dynamic
+                            await ((dynamic)consumer).DisposeAsync();
+                        }
                     }
+                    _schemaConsumers.Clear();
+
+                    if (_client != null)
+                    {
+                        await _client.CloseAsync();
+                    }
+
+                    _disposed = true;
                 }
-                _schemaConsumers.Clear();
-                
-                if (_client != null)
-                {
-                    await _client.CloseAsync();
-                }
-                
-                _disposed = true;
+                GC.SuppressFinalize(this);
             }
-            GC.SuppressFinalize(this);
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error disposing MessageConsumer: {ex.Message}");
+            }
+
         }
     }
 }

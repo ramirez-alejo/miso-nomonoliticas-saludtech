@@ -46,14 +46,16 @@ public class Program
 
 		// Register MessageBroker services
 		builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-		builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+		builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
 		
 		// Register HttpClient
 		builder.Services.AddHttpClient();
 		
-		// Register background workers
-		builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
-		builder.Services.AddHostedService<Workers.ImagenIngestionSagaWorker>();
+// Register background workers
+builder.Services.AddHostedService<Workers.ImagenConsultaDataWarehouseRequestWorker>();
+builder.Services.AddHostedService<Workers.AnonimizadaSubscriber>();
+builder.Services.AddHostedService<Workers.MetadataGeneradaSubscriber>();
+builder.Services.AddHostedService<Workers.SolicitudProcesamientoImagenWorker>();
 		
 		builder.Services.AddDbContext<ImagenDbContext>(options =>
 			options.UseNpgsql(connectionString, o =>
@@ -124,7 +126,8 @@ public class Program
 				{
 					Id = result.Id,
 					Descripcion = $"Modalidad: {imagen.TipoImagen?.Modalidad?.Nombre}, Región: {imagen.TipoImagen?.RegionAnatomica?.Nombre}",
-					FechaCreacion = DateTime.Now
+					FechaCreacion = DateTime.Now,
+					Imagen = imagen
 				});
 			var sagaId = await mediator.Send(command);
 			return Results.Accepted($"/api/imagenes/procesar/{sagaId}", new { SagaId = sagaId });

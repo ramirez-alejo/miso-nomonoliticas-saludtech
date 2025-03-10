@@ -1,4 +1,5 @@
 using Ingestion.Aplicacion.Sagas;
+using Ingestion.Dominio.Saga;
 using Mediator;
 
 namespace Ingestion.Aplicacion.Consultas;

@@ -49,7 +49,7 @@ builder.Logging.AddConsole();
 // Register repositories and services
 builder.Services.AddScoped<IAnonimizarRepository, AnonimizarRepository>();
 builder.Services.AddSingleton<IMessageProducer, MessageProducer>();
-builder.Services.AddScoped<IMessageConsumer, MessageConsumer>();
+builder.Services.AddSingleton<IMessageConsumer, MessageConsumer>();
 builder.Services.AddScoped<AnonimizarHandler>();
 builder.Services.AddScoped<EliminarAnonimizacionHandler>();
 builder.Services.AddHostedService<AnonimizarImagenSubscriptionWorker>();

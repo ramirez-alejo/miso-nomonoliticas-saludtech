@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization;
+using Core.Dominio;
+
 namespace Ingestion.Aplicacion.Dtos;
 
 public class ImagenDto
@@ -7,4 +10,7 @@ public class ImagenDto
     public string Descripcion { get; set; }
     public DateTime FechaCreacion { get; set; }
     public string Url { get; set; }
+    
+    [JsonIgnore]
+    public Imagen Imagen { get; set; }
 }

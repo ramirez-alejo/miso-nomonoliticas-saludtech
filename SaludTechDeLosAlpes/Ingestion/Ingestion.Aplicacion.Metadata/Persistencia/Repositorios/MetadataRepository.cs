@@ -15,25 +15,53 @@ public class MetadataRepository : IMetadataRepository
 	}
 	
 	//Upsert
-	public async Task UpsertMetadataGenerada(Modelos.Metadata modelo, CancellationToken cancellationToken)
+	public async Task InsertMetadataGenerada(Modelos.Metadata modelo, CancellationToken cancellationToken)
 	{
 		try
         {
             var existingEntity = await _context.Imagenes
                 .FirstOrDefaultAsync(x => x.ImagenId == modelo.ImagenId, cancellationToken);
             
-            var entity = MapeoMetadataImagen.Map(modelo);
-
             if (existingEntity == null)
             {
-                entity.Id = Guid.NewGuid();
-                await _context.Imagenes.AddAsync(entity, cancellationToken);
+                // Create a new entity if it doesn't exist
+                var newEntity = MapeoMetadataImagen.Map(modelo);
+                newEntity.Id = Guid.NewGuid();
+                await _context.Imagenes.AddAsync(newEntity, cancellationToken);
             }
             else
             {
-				entity.Id = existingEntity.Id;
-				_context.Imagenes.Update(entity);
-			}
+                // Update the existing entity that's already being tracked
+                // This approach avoids the tracking conflict
+                var updatedEntity = MapeoMetadataImagen.Map(modelo);
+                
+                // Copy properties from updatedEntity to existingEntity
+                // This keeps the same entity instance that's already being tracked
+                existingEntity.ImagenId = updatedEntity.ImagenId;
+                existingEntity.Version = updatedEntity.Version;
+                existingEntity.VersionServicio = updatedEntity.VersionServicio;
+                existingEntity.NombreModalidad = updatedEntity.NombreModalidad;
+                existingEntity.DescripcionModalidad = updatedEntity.DescripcionModalidad;
+                existingEntity.RegionAnatomica = updatedEntity.RegionAnatomica;
+                existingEntity.DescripcionRegionAnatomica = updatedEntity.DescripcionRegionAnatomica;
+                existingEntity.DescripcionPatologia = updatedEntity.DescripcionPatologia;
+                existingEntity.Resolucion = updatedEntity.Resolucion;
+                existingEntity.Contraste = updatedEntity.Contraste;
+                existingEntity.Es3D = updatedEntity.Es3D;
+                existingEntity.FaseEscaner = updatedEntity.FaseEscaner;
+                existingEntity.EtapaContextoProcesal = updatedEntity.EtapaContextoProcesal;
+                existingEntity.GrupoEdad = updatedEntity.GrupoEdad;
+                existingEntity.Sexo = updatedEntity.Sexo;
+                existingEntity.Etnicidad = updatedEntity.Etnicidad;
+                existingEntity.Fumador = updatedEntity.Fumador;
+                existingEntity.Diabetico = updatedEntity.Diabetico;
+                existingEntity.CondicionesPrevias = updatedEntity.CondicionesPrevias;
+                existingEntity.TipoAmbiente = updatedEntity.TipoAmbiente;
+                existingEntity.Sintomas = updatedEntity.Sintomas;
+                existingEntity.Timestamp = updatedEntity.Timestamp;
+                
+                // No need to call Update() as the entity is already being tracked
+            }
 
             await _context.SaveChangesAsync(cancellationToken);
         }

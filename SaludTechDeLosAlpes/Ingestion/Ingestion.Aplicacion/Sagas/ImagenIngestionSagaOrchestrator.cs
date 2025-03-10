@@ -4,6 +4,7 @@ using Ingestion.Aplicacion.Dtos;
 using Ingestion.Aplicacion.Mapeo;
 using Ingestion.Dominio.Comandos;
 using Ingestion.Dominio.Eventos;
+using Ingestion.Dominio.Saga;
 using Ingestion.Infraestructura.Logging;
 using Ingestion.Infraestructura.Persistencia.Repositorios;
 using Microsoft.Extensions.Logging;
@@ -24,6 +25,7 @@ public class ImagenIngestionSagaOrchestrator
     private const string TOPIC_ELIMINAR_ANONIMIZACION = "imagen-eliminar-anonimizacion";
     private const string TOPIC_ELIMINAR_METADATA = "metadata-eliminar";
     private const string TOPIC_INGESTION_COMPLETED = "imagen-ingestion-completed";
+    private const string TOPIC_SAGA_STATUS = "saga-status";
 
     public ImagenIngestionSagaOrchestrator(
         IMessageProducer messageProducer,
@@ -38,7 +40,23 @@ public class ImagenIngestionSagaOrchestrator
         _sagaLogger = new SagaLogger(logger);
     }
 
+    /// <summary>
+    /// Starts a new ingestion saga
+    /// </summary>
+    /// <param name="imagenDto">The image data</param>
+    /// <returns>The saga ID</returns>
     public async Task<Guid> StartSaga(ImagenDto imagenDto)
+    {
+        return await StartSaga(imagenDto, null);
+    }
+
+    /// <summary>
+    /// Starts a new ingestion saga with correlation ID
+    /// </summary>
+    /// <param name="imagenDto">The image data</param>
+    /// <param name="correlationId">Optional correlation ID for tracking</param>
+    /// <returns>The saga ID</returns>
+    public async Task<Guid> StartSaga(ImagenDto imagenDto, Guid? correlationId)
     {
         // Create new saga state
         var sagaId = Guid.NewGuid();
@@ -51,7 +69,8 @@ public class ImagenIngestionSagaOrchestrator
             CreatedAt = DateTime.UtcNow,
             ImagenId = imagenId,
             AnonimizacionCompleted = false,
-            MetadataCompleted = false
+            MetadataCompleted = false,
+            CorrelationId = correlationId
         };
 
         await _stateRepository.SaveStateAsync(state);
@@ -61,6 +80,23 @@ public class ImagenIngestionSagaOrchestrator
             ["imagenId"] = imagenId
         });
 
+        // Publish SagaIniciada event if we have a correlation ID
+        if (correlationId.HasValue)
+        {
+            var sagaIniciada = new EstadoSaga
+            {
+                CorrelationId = correlationId.Value,
+                SagaId = sagaId,
+                ImagenId = imagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, sagaIniciada);
+            _logger.LogInformation("Published saga iniciada event for saga {SagaId} with correlation ID {CorrelationId}", 
+                sagaId, correlationId.Value);
+        }
+
         // Create and publish Anonimizar command
         var anonimizarCommand = new Anonimizar
         {
@@ -68,6 +104,11 @@ public class ImagenIngestionSagaOrchestrator
             ImagenId = imagenId,
             Version = "1.0.0",
             UbicacionImagen = imagenDto.Url,
+            TipoImagen = imagenDto.Imagen?.TipoImagen,
+            Resolucion = imagenDto.Imagen?.AtributosImagen?.Resolucion,
+            Contraste = imagenDto.Imagen?.AtributosImagen?.Contraste,
+            Es3D = imagenDto.Imagen?.AtributosImagen?.Es3D ?? false,
+            FaseEscaner = imagenDto.Imagen?.AtributosImagen?.FaseEscaner,
         };
 
         await _messageProducer.SendWithSchemaAsync(TOPIC_ANONIMIZAR, anonimizarCommand);
@@ -78,7 +119,10 @@ public class ImagenIngestionSagaOrchestrator
         {
             SagaId = sagaId,
             ImagenId = imagenId,
-            Version = "1.0.0",
+            Version = imagenDto.Imagen?.Version,
+            TipoImagen = imagenDto.Imagen?.TipoImagen,
+            AtributosImagen = imagenDto.Imagen?.AtributosImagen,
+            ContextoProcesal = imagenDto.Imagen?.ContextoProcesal,
         };
 
         await _messageProducer.SendWithSchemaAsync(TOPIC_METADATA, generarMetadataCommand);
@@ -149,6 +193,14 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task TryCompleteSaga(ImagenIngestionSagaState state)
     {
+        if (state.HasError)
+        {
+            // If there was an error, execute compensation actions
+            await ExecuteCompensationActions(state);
+            
+            return;
+        }
+        
         if (state.AnonimizacionCompleted && state.MetadataCompleted)
         {
             try
@@ -175,12 +227,20 @@ public class ImagenIngestionSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event
-        await _messageProducer.SendWithSchemaAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
+        if (state.CorrelationId.HasValue)
         {
-            SagaId = state.SagaId,
-            ImagenId = state.ImagenId,
-            Success = true
-        });
+            var estadoSaga = new EstadoSaga
+            {
+                CorrelationId = state.CorrelationId.Value,
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0",
+                Status = state.Status
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, estadoSaga);
+        }
 
         _logger.LogInformation("Saga {SagaId} completed successfully", state.SagaId);
         _sagaLogger.LogSagaCompleted(state.SagaId, "ImagenIngestion", new Dictionary<string, object>
@@ -192,11 +252,9 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task HandleFailure(ImagenIngestionSagaState state, string errorMessage)
     {
-        // Execute compensation actions if needed
-        await ExecuteCompensationActions(state);
-
         // Update state
         state.Status = "Failed";
+        state.HasError = true;
         state.ErrorMessage = errorMessage;
         state.CompletedAt = DateTime.UtcNow;
         await _stateRepository.SaveStateAsync(state);
@@ -221,15 +279,36 @@ public class ImagenIngestionSagaOrchestrator
     private async Task ExecuteCompensationActions(ImagenIngestionSagaState state)
     {
         // Check which operations have completed and need compensation
-        if (state.AnonimizacionCompleted && !state.MetadataCompleted)
+        if (state.AnonimizacionCompleted)
         {
             // If Anonimizar succeeded but GenerarMetadata failed, rollback Anonimizar data
             await RollbackAnonimizacionData(state);
+            state.AnonimizacionCompleted = false;
+            state.ErrorMessage += " (Anonimizacion data rolled back)";
         }
-        else if (!state.AnonimizacionCompleted && state.MetadataCompleted)
+        
+        if (state.MetadataCompleted)
         {
             // If GenerarMetadata succeeded but Anonimizar failed, rollback Metadata data
             await RollbackMetadataData(state);
+            state.MetadataCompleted = false;
+            state.ErrorMessage += " (Metadata data rolled back)";
+        }
+        await _stateRepository.SaveStateAsync(state);
+        
+        if (state.CorrelationId.HasValue)
+        {
+            var estadoSaga = new EstadoSaga
+            {
+                CorrelationId = state.CorrelationId.Value,
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0",
+                Status = "Failed"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, estadoSaga);
         }
     }
 

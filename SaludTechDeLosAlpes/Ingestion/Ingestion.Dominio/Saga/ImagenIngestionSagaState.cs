@@ -1,6 +1,6 @@
-using Core.Dominio;
+using System.Text.Json.Serialization;
 
-namespace Ingestion.Aplicacion.Sagas;
+namespace Ingestion.Dominio.Saga;
 
 public class ImagenIngestionSagaState
 {
@@ -13,5 +13,8 @@ public class ImagenIngestionSagaState
     public bool MetadataCompleted { get; set; }
     public string ImagenProcesadaPath { get; set; }
     public Dictionary<string, string> Tags { get; set; }
+    public bool HasError { get; set; }
     public string ErrorMessage { get; set; }
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]   
+    public Guid? CorrelationId { get; set; }
 }

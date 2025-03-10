@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bff-service
+  labels:
+    app: bff-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bff-service
+  template:
+    metadata:
+      labels:
+        app: bff-service
+    spec:
+      containers:
+      - name: bff-service
+        image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/bff-service:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 80
+          protocol: TCP
+        env:
+        - name: MessageBroker__Host
+          value: "broker"
+        - name: MessageBroker__Port
+          value: "6650"
+        - name: MessageBroker__SubscriptionType
+          value: "Shared"
+        - name: Redis__ConnectionString
+          value: "redis:6379"
+        resources:
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+          requests:
+            memory: "128Mi"
+            cpu: "100m"

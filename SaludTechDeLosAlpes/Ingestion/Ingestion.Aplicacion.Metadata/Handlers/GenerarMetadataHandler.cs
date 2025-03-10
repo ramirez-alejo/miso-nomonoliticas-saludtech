@@ -36,10 +36,11 @@ public class GenerarMetadataHandler{
 
 			_logger.LogInformation("Procesando generar metadata de Imagen para ImagenId: {ImagenId}", comando?.ImagenId);
 			_logger.LogInformation("Detalle del comando: {@Evento}", comando);
+			
 
 			var metadata = MapeoMetadataImagen.MapFromCommand(comando);
 			metadata.GenerarTags();
-			await _repository.UpsertMetadataGenerada(metadata, CancellationToken.None);
+			await _repository.InsertMetadataGenerada(metadata, CancellationToken.None);
 
 			_logger.LogInformation("Comando metadata procesado para ImagenId: {ImagenId}",
 				comando.ImagenId);

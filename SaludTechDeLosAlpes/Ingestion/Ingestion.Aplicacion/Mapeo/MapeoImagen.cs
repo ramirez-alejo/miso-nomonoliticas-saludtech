@@ -1,5 +1,8 @@
+using System.Text.Json;
 using Core.Dominio;
+using Ingestion.Aplicacion.Comandos;
 using Ingestion.Aplicacion.Dtos;
+using Ingestion.Dominio.Eventos;
 using Ingestion.Infraestructura.Persistencia.Entidades;
 
 namespace Ingestion.Aplicacion.Mapeo;
@@ -79,6 +82,20 @@ public static class MapeoImagen
                 },
                 TokenAnonimo = entity.Paciente?.TokenAnonimo
             }
+        };
+    }
+
+    public static CrearImagenMedicaCommand MapToCommand(SolicitudProcesamientoImagen solicitudProcesamientoImagen)
+    {
+        return new CrearImagenMedicaCommand
+        {
+            Id = solicitudProcesamientoImagen.Id,
+            Version = solicitudProcesamientoImagen.Version,
+            TipoImagen = solicitudProcesamientoImagen.TipoImagen,
+            AtributosImagen = solicitudProcesamientoImagen.AtributosImagen,
+            ContextoProcesal = solicitudProcesamientoImagen.ContextoProcesal,
+            Metadatos = solicitudProcesamientoImagen.Metadatos,
+            Paciente = solicitudProcesamientoImagen.Paciente
         };
     }
 }

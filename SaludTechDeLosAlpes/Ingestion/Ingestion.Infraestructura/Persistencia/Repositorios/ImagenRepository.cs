@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Core.Dominio;
 using Ingestion.Infraestructura.Mapeo;
 using Ingestion.Infraestructura.Persistencia.Entidades;
@@ -34,12 +35,25 @@ public class ImagenRepository(ImagenDbContext context) : IImagenRepository
 
 	public async Task<Imagen> AddAsync(Imagen imagen, CancellationToken cancellationToken)
 	{
-		var imagenEntity = MapeoImagen.MapearImagenDominioAEntity(imagen);
+		try
+		{
+			var imagenEntity = MapeoImagen.MapearImagenDominioAEntity(imagen);
 
-		await context.Imagenes.AddAsync(imagenEntity, cancellationToken);
-		await context.SaveChangesAsync(cancellationToken);
-		imagen.Id = imagenEntity.Id;
-		return imagen;
+			await context.Imagenes.AddAsync(imagenEntity, cancellationToken);
+			await context.SaveChangesAsync(cancellationToken);
+			imagen.Id = imagenEntity.Id;
+			return imagen;
+		}
+		catch (Exception e)
+		{
+			Console.Error.WriteLine(e);
+			// Log the input data for debugging
+			Console.WriteLine(JsonSerializer.Serialize(imagen));
+			
+			Console.WriteLine(e);
+			throw;
+		}
+		
 	}
 
 	public async Task UpdateAsync(Imagen imagen, CancellationToken cancellationToken)
