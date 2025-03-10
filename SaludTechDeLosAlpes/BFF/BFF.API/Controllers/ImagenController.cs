@@ -72,27 +72,14 @@ public class ImagenController : ControllerBase
                 });
             }
             
-            // query the saga using the id
-            var saga = await _imagenService.ObtenerEstadoSagaAsync(correlationInfo.SagaId);
-            
-            var mensaje = "El procesamiento está en curso";
-            if (saga.Status == "Completed")
-            {
-                mensaje = "El procesamiento ha finalizado";
-            }
-            if (saga.Status == "Failed")
-            {
-                mensaje = "El procesamiento ha fallado y se an reversado los cambios";
-            }
-            
             // We have a saga ID, return more detailed information
             return Ok(new 
             { 
                 CorrelationId = correlationInfo.CorrelationId,
                 SagaId = correlationInfo.SagaId,
-                ImagenId = saga.ImagenId,
-                Estado = saga.Status =="Completed" ? "Completado" : "En progreso",
-                Mensaje = mensaje,
+                ImagenId = correlationInfo.ImagenId,
+                Estado = correlationInfo.Status,
+                Mensaje = correlationInfo.Message
             });
         }
         catch (Exception ex)

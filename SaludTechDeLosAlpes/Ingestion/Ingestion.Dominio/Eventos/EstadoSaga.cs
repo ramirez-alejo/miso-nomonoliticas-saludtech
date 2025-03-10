@@ -3,7 +3,7 @@ namespace Ingestion.Dominio.Eventos;
 /// <summary>
 /// Event published when a saga is started
 /// </summary>
-public class SagaIniciada
+public class EstadoSaga
 {
     /// <summary>
     /// The correlation ID from the original request
@@ -24,6 +24,7 @@ public class SagaIniciada
     /// When the saga was created
     /// </summary>
     public DateTime FechaCreacion { get; set; }
+    public string Status { get; set; }
     
     /// <summary>
     /// Schema version

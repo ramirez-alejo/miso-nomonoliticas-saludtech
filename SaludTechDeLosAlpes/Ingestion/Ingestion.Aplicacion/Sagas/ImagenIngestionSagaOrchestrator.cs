@@ -25,7 +25,7 @@ public class ImagenIngestionSagaOrchestrator
     private const string TOPIC_ELIMINAR_ANONIMIZACION = "imagen-eliminar-anonimizacion";
     private const string TOPIC_ELIMINAR_METADATA = "metadata-eliminar";
     private const string TOPIC_INGESTION_COMPLETED = "imagen-ingestion-completed";
-    private const string TOPIC_SAGA_INICIADA = "saga-iniciada";
+    private const string TOPIC_SAGA_STATUS = "saga-status";
 
     public ImagenIngestionSagaOrchestrator(
         IMessageProducer messageProducer,
@@ -69,7 +69,8 @@ public class ImagenIngestionSagaOrchestrator
             CreatedAt = DateTime.UtcNow,
             ImagenId = imagenId,
             AnonimizacionCompleted = false,
-            MetadataCompleted = false
+            MetadataCompleted = false,
+            CorrelationId = correlationId
         };
 
         await _stateRepository.SaveStateAsync(state);
@@ -82,7 +83,7 @@ public class ImagenIngestionSagaOrchestrator
         // Publish SagaIniciada event if we have a correlation ID
         if (correlationId.HasValue)
         {
-            var sagaIniciada = new SagaIniciada
+            var sagaIniciada = new EstadoSaga
             {
                 CorrelationId = correlationId.Value,
                 SagaId = sagaId,
@@ -91,7 +92,7 @@ public class ImagenIngestionSagaOrchestrator
                 Version = "1.0.0"
             };
 
-            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_INICIADA, sagaIniciada);
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, sagaIniciada);
             _logger.LogInformation("Published saga iniciada event for saga {SagaId} with correlation ID {CorrelationId}", 
                 sagaId, correlationId.Value);
         }
@@ -196,6 +197,7 @@ public class ImagenIngestionSagaOrchestrator
         {
             // If there was an error, execute compensation actions
             await ExecuteCompensationActions(state);
+            
             return;
         }
         
@@ -225,12 +227,20 @@ public class ImagenIngestionSagaOrchestrator
         await _stateRepository.SaveStateAsync(state);
 
         // Publish completion event
-        await _messageProducer.SendWithSchemaAsync(TOPIC_INGESTION_COMPLETED, new ImagenIngestionCompletada
+        if (state.CorrelationId.HasValue)
         {
-            SagaId = state.SagaId,
-            ImagenId = state.ImagenId,
-            Success = true
-        });
+            var estadoSaga = new EstadoSaga
+            {
+                CorrelationId = state.CorrelationId.Value,
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0",
+                Status = state.Status
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, estadoSaga);
+        }
 
         _logger.LogInformation("Saga {SagaId} completed successfully", state.SagaId);
         _sagaLogger.LogSagaCompleted(state.SagaId, "ImagenIngestion", new Dictionary<string, object>
@@ -285,6 +295,21 @@ public class ImagenIngestionSagaOrchestrator
             state.ErrorMessage += " (Metadata data rolled back)";
         }
         await _stateRepository.SaveStateAsync(state);
+        
+        if (state.CorrelationId.HasValue)
+        {
+            var estadoSaga = new EstadoSaga
+            {
+                CorrelationId = state.CorrelationId.Value,
+                SagaId = state.SagaId,
+                ImagenId = state.ImagenId,
+                FechaCreacion = DateTime.UtcNow,
+                Version = "1.0.0",
+                Status = "Failed"
+            };
+
+            await _messageProducer.SendWithSchemaAsync(TOPIC_SAGA_STATUS, estadoSaga);
+        }
     }
 
     private async Task RollbackAnonimizacionData(ImagenIngestionSagaState state)

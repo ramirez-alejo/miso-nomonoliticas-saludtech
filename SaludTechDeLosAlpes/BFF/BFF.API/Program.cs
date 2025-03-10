@@ -55,7 +55,7 @@ public class Program
         builder.Services.AddScoped<IImagenService, ImagenService>();
         
         // Register background workers
-        builder.Services.AddHostedService<SagaIniciadaSubscriptionWorker>();
+        builder.Services.AddHostedService<SagaStatusSubscriptionWorker>();
         
         builder.Services.AddControllers();
         

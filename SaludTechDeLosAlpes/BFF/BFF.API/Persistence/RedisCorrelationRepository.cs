@@ -66,16 +66,6 @@ public class RedisCorrelationRepository : ICorrelationRepository
         return correlationInfo;
     }
     
-    public async Task<ImagenIngestionSagaState> GetSagaStateAsync(Guid sagaId)
-    {
-        var value = await _db.StringGetAsync($"ingestion:saga:{sagaId}");
-        
-        if (value.IsNullOrEmpty)
-            return null;
-            
-        return JsonSerializer.Deserialize<ImagenIngestionSagaState>(value!, _jsonOptions);
-    }
-    
 
     /// <inheritdoc />
     public async Task DeleteCorrelationAsync(Guid correlationId)

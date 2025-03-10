@@ -8,21 +8,21 @@ namespace BFF.API.Workers;
 /// <summary>
 /// Background worker that subscribes to SagaIniciada events
 /// </summary>
-public class SagaIniciadaSubscriptionWorker : BackgroundService
+public class SagaStatusSubscriptionWorker : BackgroundService
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly ILogger<SagaIniciadaSubscriptionWorker> _logger;
+    private readonly ILogger<SagaStatusSubscriptionWorker> _logger;
     
     // Topic constants
-    private const string TOPIC_SAGA_INICIADA = "saga-iniciada";
+    private const string TOPIC_SAGA_STATUS = "saga-status";
     private const string SUBSCRIPTION_NAME = "bff-saga-iniciada-subscription";
     
     private IMessageConsumer? _messageConsumer;
     private AsyncServiceScope? _scope;
     
-    public SagaIniciadaSubscriptionWorker(
+    public SagaStatusSubscriptionWorker(
         IServiceProvider serviceProvider,
-        ILogger<SagaIniciadaSubscriptionWorker> logger)
+        ILogger<SagaStatusSubscriptionWorker> logger)
     {
         _serviceProvider = serviceProvider;
         _logger = logger;
@@ -39,12 +39,12 @@ public class SagaIniciadaSubscriptionWorker : BackgroundService
             var imagenService = _scope.Value.ServiceProvider.GetRequiredService<IImagenService>();
             _messageConsumer = _scope.Value.ServiceProvider.GetRequiredService<IMessageConsumer>();
             
-            await _messageConsumer.StartWithSchemaAsync<SagaIniciada>(
-                TOPIC_SAGA_INICIADA,
+            await _messageConsumer.StartWithSchemaAsync<EstadoSaga>(
+                TOPIC_SAGA_STATUS,
                 SUBSCRIPTION_NAME,
-                async (sagaIniciada) => await HandleSagaIniciadaAsync(sagaIniciada, imagenService));
+                async (sagaIniciada) => await HandleSagaStatusEventAsync(sagaIniciada, imagenService));
             
-            _logger.LogInformation("SagaIniciadaSubscriptionWorker iniciado y suscrito a {Topic}", TOPIC_SAGA_INICIADA);
+            _logger.LogInformation("SagaIniciadaSubscriptionWorker iniciado y suscrito a {Topic}", TOPIC_SAGA_STATUS);
             
             // Keep the worker running
             while (!stoppingToken.IsCancellationRequested)
@@ -59,21 +59,23 @@ public class SagaIniciadaSubscriptionWorker : BackgroundService
         }
     }
     
-    private async Task HandleSagaIniciadaAsync(SagaIniciada sagaIniciada, IImagenService imagenService)
+    private async Task HandleSagaStatusEventAsync(EstadoSaga estadoSaga, IImagenService imagenService)
     {
         try
         {
             _logger.LogInformation("Recibido evento SagaIniciada: CorrelationId={CorrelationId}, SagaId={SagaId}, ImagenId={ImagenId}",
-                sagaIniciada.CorrelationId, sagaIniciada.SagaId, sagaIniciada.ImagenId);
-            
-            await imagenService.HandleSagaIniciadaAsync(
-                sagaIniciada.CorrelationId,
-                sagaIniciada.SagaId,
-                sagaIniciada.ImagenId);
+                estadoSaga.CorrelationId, estadoSaga.SagaId, estadoSaga.ImagenId);
+
+
+            await imagenService.HandleSagaStatusAsync(
+                estadoSaga.CorrelationId,
+                estadoSaga.SagaId,
+                estadoSaga.ImagenId,
+                estadoSaga.Status);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error al procesar evento SagaIniciada: {CorrelationId}", sagaIniciada.CorrelationId);
+            _logger.LogError(ex, "Error al procesar evento SagaIniciada: {CorrelationId}", estadoSaga.CorrelationId);
         }
     }
     

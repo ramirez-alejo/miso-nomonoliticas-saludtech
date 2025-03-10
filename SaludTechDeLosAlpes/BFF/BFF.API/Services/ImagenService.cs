@@ -82,24 +82,9 @@ public class ImagenService : IImagenService
         
         return correlationInfo;
     }
-
-    public async Task<ImagenIngestionSagaState> ObtenerEstadoSagaAsync(Guid sagaId)
-    {
-        _logger.LogInformation("Obteniendo estado de saga para sagaId {SagaId}", sagaId);
-        
-        var sagaState = await _correlationRepository.GetSagaStateAsync(sagaId);
-        
-        if (sagaState == null)
-        {
-            _logger.LogWarning("No se encontró información para sagaId {SagaId}", sagaId);
-            return null;
-        }
-        
-        return sagaState;
-    }
     
     /// <inheritdoc />
-    public async Task HandleSagaIniciadaAsync(Guid correlationId, Guid sagaId, Guid imagenId)
+    public async Task HandleSagaStatusAsync(Guid correlationId, Guid sagaId, Guid imagenId, string sagaStatus)
     {
         _logger.LogInformation("Manejando evento SagaIniciada para correlationId {CorrelationId}, sagaId {SagaId}", 
             correlationId, sagaId);
@@ -123,6 +108,23 @@ public class ImagenService : IImagenService
         
         // Update with the saga ID
         correlationInfo.SagaId = sagaId;
+        correlationInfo.ImagenId = imagenId;
+        
+        var status = "En Proceso";
+        var message = "El procesamiento está en curso";
+        if (sagaStatus == "Completed")
+        {
+            status = "Completado";
+            message = "El procesamiento ha finalizado";
+        }
+        if (sagaStatus == "Failed")
+        {
+            status = "Fallido";
+            message = "El procesamiento ha fallado y se an reversado los cambios";
+        }
+
+        correlationInfo.Status = status;
+        correlationInfo.Message = message;
         
         // Save the updated correlation info
         await _correlationRepository.SaveCorrelationAsync(correlationInfo, DEFAULT_TTL_SECONDS);

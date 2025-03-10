@@ -28,6 +28,4 @@ public interface ICorrelationRepository
     /// <param name="correlationId">The correlation ID to delete</param>
     /// <returns>Task representing the asynchronous operation</returns>
     Task DeleteCorrelationAsync(Guid correlationId);
-
-    Task<ImagenIngestionSagaState> GetSagaStateAsync(Guid sagaId);
 }

@@ -24,4 +24,8 @@ public class CorrelationInfo
     /// When the correlation was created
     /// </summary>
     public DateTime CreatedAt { get; set; }
+
+    public string Status { get; set; }
+
+    public string Message { get; set; }
 }
