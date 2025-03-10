@@ -24,6 +24,8 @@ spec:
               value: broker
             - name: MessageBroker__Port
               value: "6650"
+            - name: MessageBroker__SubscriptionType
+              value: "Shared"
             - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
               value: Ignore
             # Añadir configuración de logging

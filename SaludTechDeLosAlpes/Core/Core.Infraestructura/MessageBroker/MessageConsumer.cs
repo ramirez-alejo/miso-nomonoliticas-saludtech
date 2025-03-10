@@ -49,7 +49,7 @@ namespace Core.Infraestructura.MessageBroker
             var consumer = await _client.NewConsumer()
                 .Topic(topic)
                 .SubscriptionName(subscriptionName)
-                .SubscriptionType(SubscriptionType.Exclusive)
+                .SubscriptionType(SubscriptionType.Shared)
                 .SubscribeAsync();
 
             _consumers[consumerKey] = consumer;
@@ -128,7 +128,7 @@ namespace Core.Infraestructura.MessageBroker
                 var consumer = await _client.NewConsumer(schema)
                     .Topic(topic)
                     .SubscriptionName(subscriptionName)
-                    .SubscriptionType(SubscriptionType.Exclusive)
+                    .SubscriptionType(SubscriptionType.Shared)
                     .SubscribeAsync();
 
                 _schemaConsumers[consumerKey] = consumer;

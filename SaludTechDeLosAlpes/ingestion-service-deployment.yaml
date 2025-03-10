@@ -24,6 +24,8 @@ spec:
               value: broker
             - name: MessageBroker__Port
               value: "6650"
+            - name: MessageBroker__SubscriptionType
+              value: "Shared"
             - name: Redis__ConnectionString
               value: redis:6379
             # Añadir configuración de logging

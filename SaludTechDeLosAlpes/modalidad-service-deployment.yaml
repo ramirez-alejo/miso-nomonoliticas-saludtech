@@ -24,6 +24,8 @@ spec:
               value: broker
             - name: MessageBroker__Port
               value: "6650"
+            - name: MessageBroker__SubscriptionType
+              value: "Shared"
             - name: DOTNET_HostOptions__BackgroundServiceExceptionBehavior
               value: Ignore
           image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/modalidad-service:latest

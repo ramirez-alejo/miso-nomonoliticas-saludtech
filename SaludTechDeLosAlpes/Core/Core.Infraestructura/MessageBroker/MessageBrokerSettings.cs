@@ -10,5 +10,6 @@ public class MessageBrokerSettings
     /// </summary>
     public bool UseSchemaRegistry { get; set; } = false;
 
+
     public string ServiceUrl => $"pulsar://{Host}:{Port}";
 }

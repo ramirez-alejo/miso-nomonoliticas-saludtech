@@ -90,3 +90,32 @@ Proyecto del curso de soluciones no monolíticas para el grupo 20.
    - Use el endpoint `Consultar BFF Ingestion` en Postman con el correlation id
    - Verifique la respuesta y el estado de la saga
    
+
+### Despliegue en GKE
+
+   - Se debe tener en cuenta que el despliegue en GKE requiere de una cuenta de Google Cloud y de la instalación de `gcloud` y `kubectl` en la máquina local.
+   - Autenticarse con Google Cloud:
+     ```bash
+     gcloud auth login
+     ```
+   - Compilar las imágenes de Docker:
+     ```bash
+     docker-compose build
+     ```
+   - Etiquetar las imágenes para subirlas a Google Container Registry:
+     ```bash
+       docker tag saludtechdelosalpes_ingestion-metadata gcr.io/[PROJECT_ID]/saludtechdelosalpes_xxxx-xxxxx
+       ```
+   - Subir las imágenes a Google Container Registry:
+       ```bash
+       docker compose push
+       ```
+   - Generar el manifiesto de Kubernetes usando Kompose:
+     ```bash
+     kompose convert
+     ```
+   - Desplegar en GKE:
+     ```bash
+       kubectl apply -f .
+       ```
+       

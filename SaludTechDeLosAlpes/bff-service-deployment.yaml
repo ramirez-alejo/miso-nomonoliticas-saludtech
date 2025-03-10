@@ -16,15 +16,18 @@ spec:
     spec:
       containers:
       - name: bff-service
-        image: saludtech/bff-service:latest
+        image: northamerica-northeast2-docker.pkg.dev/miso-nomonoliticas/no-monoliticas/bff-service:latest
         imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 80
+          protocol: TCP
         env:
         - name: MessageBroker__Host
           value: "broker"
         - name: MessageBroker__Port
           value: "6650"
+        - name: MessageBroker__SubscriptionType
+          value: "Shared"
         - name: Redis__ConnectionString
           value: "redis:6379"
         resources:
