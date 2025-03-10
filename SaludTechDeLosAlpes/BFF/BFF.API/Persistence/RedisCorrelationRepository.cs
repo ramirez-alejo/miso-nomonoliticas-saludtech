@@ -68,8 +68,7 @@ public class RedisCorrelationRepository : ICorrelationRepository
     
     public async Task<ImagenIngestionSagaState> GetSagaStateAsync(Guid sagaId)
     {
-        var key = GetKey(sagaId);
-        var value = await _db.StringGetAsync(key);
+        var value = await _db.StringGetAsync($"ingestion:saga:{sagaId}");
         
         if (value.IsNullOrEmpty)
             return null;

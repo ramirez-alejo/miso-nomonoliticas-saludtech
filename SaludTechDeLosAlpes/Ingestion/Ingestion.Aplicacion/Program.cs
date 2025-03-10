@@ -126,7 +126,8 @@ builder.Services.AddHostedService<Workers.SolicitudProcesamientoImagenWorker>();
 				{
 					Id = result.Id,
 					Descripcion = $"Modalidad: {imagen.TipoImagen?.Modalidad?.Nombre}, Región: {imagen.TipoImagen?.RegionAnatomica?.Nombre}",
-					FechaCreacion = DateTime.Now
+					FechaCreacion = DateTime.Now,
+					Imagen = imagen
 				});
 			var sagaId = await mediator.Send(command);
 			return Results.Accepted($"/api/imagenes/procesar/{sagaId}", new { SagaId = sagaId });

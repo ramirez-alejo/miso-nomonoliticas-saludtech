@@ -103,6 +103,11 @@ public class ImagenIngestionSagaOrchestrator
             ImagenId = imagenId,
             Version = "1.0.0",
             UbicacionImagen = imagenDto.Url,
+            TipoImagen = imagenDto.Imagen?.TipoImagen,
+            Resolucion = imagenDto.Imagen?.AtributosImagen?.Resolucion,
+            Contraste = imagenDto.Imagen?.AtributosImagen?.Contraste,
+            Es3D = imagenDto.Imagen?.AtributosImagen?.Es3D ?? false,
+            FaseEscaner = imagenDto.Imagen?.AtributosImagen?.FaseEscaner,
         };
 
         await _messageProducer.SendWithSchemaAsync(TOPIC_ANONIMIZAR, anonimizarCommand);
@@ -113,7 +118,10 @@ public class ImagenIngestionSagaOrchestrator
         {
             SagaId = sagaId,
             ImagenId = imagenId,
-            Version = "1.0.0",
+            Version = imagenDto.Imagen?.Version,
+            TipoImagen = imagenDto.Imagen?.TipoImagen,
+            AtributosImagen = imagenDto.Imagen?.AtributosImagen,
+            ContextoProcesal = imagenDto.Imagen?.ContextoProcesal,
         };
 
         await _messageProducer.SendWithSchemaAsync(TOPIC_METADATA, generarMetadataCommand);
@@ -184,6 +192,13 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task TryCompleteSaga(ImagenIngestionSagaState state)
     {
+        if (state.HasError)
+        {
+            // If there was an error, execute compensation actions
+            await ExecuteCompensationActions(state);
+            return;
+        }
+        
         if (state.AnonimizacionCompleted && state.MetadataCompleted)
         {
             try
@@ -227,11 +242,9 @@ public class ImagenIngestionSagaOrchestrator
 
     private async Task HandleFailure(ImagenIngestionSagaState state, string errorMessage)
     {
-        // Execute compensation actions if needed
-        await ExecuteCompensationActions(state);
-
         // Update state
         state.Status = "Failed";
+        state.HasError = true;
         state.ErrorMessage = errorMessage;
         state.CompletedAt = DateTime.UtcNow;
         await _stateRepository.SaveStateAsync(state);
@@ -256,16 +269,22 @@ public class ImagenIngestionSagaOrchestrator
     private async Task ExecuteCompensationActions(ImagenIngestionSagaState state)
     {
         // Check which operations have completed and need compensation
-        if (state.AnonimizacionCompleted && !state.MetadataCompleted)
+        if (state.AnonimizacionCompleted)
         {
             // If Anonimizar succeeded but GenerarMetadata failed, rollback Anonimizar data
             await RollbackAnonimizacionData(state);
+            state.AnonimizacionCompleted = false;
+            state.ErrorMessage += " (Anonimizacion data rolled back)";
         }
-        else if (!state.AnonimizacionCompleted && state.MetadataCompleted)
+        
+        if (state.MetadataCompleted)
         {
             // If GenerarMetadata succeeded but Anonimizar failed, rollback Metadata data
             await RollbackMetadataData(state);
+            state.MetadataCompleted = false;
+            state.ErrorMessage += " (Metadata data rolled back)";
         }
+        await _stateRepository.SaveStateAsync(state);
     }
 
     private async Task RollbackAnonimizacionData(ImagenIngestionSagaState state)

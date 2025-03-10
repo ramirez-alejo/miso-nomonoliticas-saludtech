@@ -74,6 +74,7 @@ public class SolicitudProcesamientoImagenWorker : BackgroundService
         {
             // Map the SolicitudProcesamientoImagen to ImagenDto
             var imagenDto = MapToImagenDto(solicitud);
+            imagenDto.Imagen = solicitud;
             
             // map the SolicitudProcesamientoImagen to CrearImagenMedicaCommand (since both inherit from Imagen)
             var imagenCommand = MapeoImagen.MapToCommand(solicitud);

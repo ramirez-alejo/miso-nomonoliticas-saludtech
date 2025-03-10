@@ -36,6 +36,7 @@ public class GenerarMetadataHandler{
 
 			_logger.LogInformation("Procesando generar metadata de Imagen para ImagenId: {ImagenId}", comando?.ImagenId);
 			_logger.LogInformation("Detalle del comando: {@Evento}", comando);
+			
 
 			var metadata = MapeoMetadataImagen.MapFromCommand(comando);
 			metadata.GenerarTags();

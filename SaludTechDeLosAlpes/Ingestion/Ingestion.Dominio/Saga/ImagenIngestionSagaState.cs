@@ -11,5 +11,7 @@ public class ImagenIngestionSagaState
     public bool MetadataCompleted { get; set; }
     public string ImagenProcesadaPath { get; set; }
     public Dictionary<string, string> Tags { get; set; }
+    public bool HasError { get; set; }
+    
     public string ErrorMessage { get; set; }
 }
